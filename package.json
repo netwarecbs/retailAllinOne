@@ -1,0 +1,36 @@
+{
+  "name": "retail-all-in-one",
+  "version": "1.0.0",
+  "description": "Dockerized monorepo with multiple Next.js applications and shared authentication",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "setup": "npm install && npm install --workspaces && npm run build:packages",
+    "build:packages": "cd packages/shared && npm run build && cd ../ui && npm run build && cd ../..",
+    "dev": "docker-compose up --build",
+    "dev:local": "concurrently \"npm run dev:web\" \"npm run dev:garment\" \"npm run dev:pharmacy\"",
+    "dev:web": "cd apps/web && npm run dev",
+    "dev:garment": "cd apps/garment && npm run dev",
+    "dev:pharmacy": "cd apps/pharmacy && npm run dev",
+    "build": "npm run build --workspaces",
+    "build:web": "cd apps/web && npm run build",
+    "build:garment": "cd apps/garment && npm run build",
+    "build:pharmacy": "cd apps/pharmacy && npm run build",
+    "start": "docker-compose up",
+    "stop": "docker-compose down",
+    "clean": "docker-compose down -v && docker system prune -f",
+    "install:all": "npm install && npm run install:workspaces",
+    "install:workspaces": "npm install --workspaces"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}

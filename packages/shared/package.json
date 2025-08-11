@@ -1,0 +1,26 @@
+{
+  "name": "@retail/shared",
+  "version": "1.0.0",
+  "description": "Shared authentication and API services for retail applications",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@reduxjs/toolkit": "^2.0.0",
+    "react-redux": "^9.0.0",
+    "axios": "^1.6.0",
+    "js-cookie": "^3.0.5"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.0",
+    "@types/js-cookie": "^3.0.6",
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0"
+  }
+}

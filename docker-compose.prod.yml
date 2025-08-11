@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+    container_name: retail-web-prod
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+    networks:
+      - retail-network
+
+  garment:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+    container_name: retail-garment-prod
+    ports:
+      - "3001:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+    networks:
+      - retail-network
+
+  pharmacy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+    container_name: retail-pharmacy-prod
+    ports:
+      - "3002:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+    networks:
+      - retail-network
+
+networks:
+  retail-network:
+    driver: bridge

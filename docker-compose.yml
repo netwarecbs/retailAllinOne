@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: retail-web
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/apps/web/node_modules
+    environment:
+      - NODE_ENV=development
+      - NEXT_TELEMETRY_DISABLED=1
+    working_dir: /app/apps/web
+    command: npm run dev
+    networks:
+      - retail-network
+
+  garment:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: retail-garment
+    ports:
+      - "3001:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/apps/garment/node_modules
+    environment:
+      - NODE_ENV=development
+      - NEXT_TELEMETRY_DISABLED=1
+    working_dir: /app/apps/garment
+    command: npm run dev
+    networks:
+      - retail-network
+
+  pharmacy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: retail-pharmacy
+    ports:
+      - "3002:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/apps/pharmacy/node_modules
+    environment:
+      - NODE_ENV=development
+      - NEXT_TELEMETRY_DISABLED=1
+    working_dir: /app/apps/pharmacy
+    command: npm run dev
+    networks:
+      - retail-network
+
+networks:
+  retail-network:
+    driver: bridge
