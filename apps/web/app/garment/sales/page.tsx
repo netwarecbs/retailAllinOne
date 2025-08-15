@@ -1,6 +1,7 @@
 'use client'
 
 import { Button, Card, CardContent } from '@retail/ui'
+import { ActionGate } from '../../../components/RBAC'
 
 export default function GarmentSalesPage() {
     return (
@@ -293,9 +294,15 @@ export default function GarmentSalesPage() {
                 {/* Bottom action buttons + hold */}
                 <div className="flex flex-col items-center gap-3">
                     <div className="flex items-center justify-center gap-3">
-                        <Button className="h-8 bg-blue-600 hover:bg-blue-700 text-xs px-4">Save</Button>
-                        <Button className="h-8 bg-blue-600 hover:bg-blue-700 text-xs px-4">Save & Print</Button>
-                        <Button variant="outline" className="h-8 text-xs px-4">PDF</Button>
+                        <ActionGate tile="garment" page="sales" action="save" fallback={null}>
+                            <Button className="h-8 bg-blue-600 hover:bg-blue-700 text-xs px-4">Save</Button>
+                        </ActionGate>
+                        <ActionGate tile="garment" page="sales" action="print" fallback={null}>
+                            <Button className="h-8 bg-blue-600 hover:bg-blue-700 text-xs px-4">Save & Print</Button>
+                        </ActionGate>
+                        <ActionGate tile="garment" page="sales" action="pdf" fallback={null}>
+                            <Button variant="outline" className="h-8 text-xs px-4">PDF</Button>
+                        </ActionGate>
                     </div>
                     <div className="flex items-center gap-2 text-xs">
                         <span>- -</span>

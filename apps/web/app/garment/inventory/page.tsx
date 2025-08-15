@@ -1,6 +1,7 @@
 'use client'
 
 import { Button, Card, CardContent, CardHeader, CardTitle, Input } from '@retail/ui'
+import { ActionGate } from '../../../components/RBAC'
 
 export default function GarmentInventoryPage() {
     return (
@@ -14,9 +15,15 @@ export default function GarmentInventoryPage() {
                     <CardContent className="p-4 space-y-3">
                         <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
                             <div className="flex flex-wrap items-center gap-2">
-                                <Button variant="outline" className="h-7">Print Report</Button>
-                                <Button variant="outline" className="h-7">Excel Report</Button>
-                                <Button className="h-7 bg-blue-600 hover:bg-blue-700">Generate Barcode</Button>
+                                <ActionGate tile="garment" page="inventory" action="print" fallback={null}>
+                                    <Button variant="outline" className="h-7">Print Report</Button>
+                                </ActionGate>
+                                <ActionGate tile="garment" page="inventory" action="export" fallback={null}>
+                                    <Button variant="outline" className="h-7">Excel Report</Button>
+                                </ActionGate>
+                                <ActionGate tile="garment" page="inventory" action="create" fallback={null}>
+                                    <Button className="h-7 bg-blue-600 hover:bg-blue-700">Generate Barcode</Button>
+                                </ActionGate>
                             </div>
                             <div className="flex flex-wrap items-center gap-2">
                                 <Button variant="outline" className="h-7">Brand</Button>
@@ -24,7 +31,9 @@ export default function GarmentInventoryPage() {
                                 <Button variant="outline" className="h-7">Manage HSN</Button>
                                 <Button variant="outline" className="h-7">Manage Units</Button>
                                 <Button variant="outline" className="h-7">Categories</Button>
-                                <Button className="h-7 bg-blue-600 hover:bg-blue-700">Add Item</Button>
+                                <ActionGate tile="garment" page="inventory" action="create" fallback={null}>
+                                    <Button className="h-7 bg-blue-600 hover:bg-blue-700">Add Item</Button>
+                                </ActionGate>
                             </div>
                         </div>
 
@@ -91,8 +100,12 @@ export default function GarmentInventoryPage() {
                                         <td className="px-3 py-2">-2 PCS</td>
                                         <td className="px-3 py-2">
                                             <div className="flex items-center gap-2">
-                                                <Button variant="outline" className="h-6 px-2">✎</Button>
-                                                <Button variant="outline" className="h-6 px-2">🗑</Button>
+                                                <ActionGate tile="garment" page="inventory" action="update" fallback={null}>
+                                                    <Button variant="outline" className="h-6 px-2">✎</Button>
+                                                </ActionGate>
+                                                <ActionGate tile="garment" page="inventory" action="delete" fallback={null}>
+                                                    <Button variant="outline" className="h-6 px-2">🗑</Button>
+                                                </ActionGate>
                                             </div>
                                         </td>
                                     </tr>
@@ -111,8 +124,12 @@ export default function GarmentInventoryPage() {
                                         <td className="px-3 py-2">9 PCS</td>
                                         <td className="px-3 py-2">
                                             <div className="flex items-center gap-2">
-                                                <Button variant="outline" className="h-6 px-2">✎</Button>
-                                                <Button variant="outline" className="h-6 px-2">🗑</Button>
+                                                <ActionGate tile="garment" page="inventory" action="update" fallback={null}>
+                                                    <Button variant="outline" className="h-6 px-2">✎</Button>
+                                                </ActionGate>
+                                                <ActionGate tile="garment" page="inventory" action="delete" fallback={null}>
+                                                    <Button variant="outline" className="h-6 px-2">🗑</Button>
+                                                </ActionGate>
                                             </div>
                                         </td>
                                     </tr>
@@ -128,8 +145,12 @@ export default function GarmentInventoryPage() {
                                         <td className="px-3 py-2">-13 PCS</td>
                                         <td className="px-3 py-2">
                                             <div className="flex items-center gap-2">
-                                                <Button variant="outline" className="h-6 px-2">✎</Button>
-                                                <Button variant="outline" className="h-6 px-2">🗑</Button>
+                                                <ActionGate tile="garment" page="inventory" action="update" fallback={null}>
+                                                    <Button variant="outline" className="h-6 px-2">✎</Button>
+                                                </ActionGate>
+                                                <ActionGate tile="garment" page="inventory" action="delete" fallback={null}>
+                                                    <Button variant="outline" className="h-6 px-2">🗑</Button>
+                                                </ActionGate>
                                             </div>
                                         </td>
                                     </tr>
@@ -145,8 +166,12 @@ export default function GarmentInventoryPage() {
                                         <td className="px-3 py-2">-3 PCS</td>
                                         <td className="px-3 py-2">
                                             <div className="flex items-center gap-2">
-                                                <Button variant="outline" className="h-6 px-2">✎</Button>
-                                                <Button variant="outline" className="h-6 px-2">🗑</Button>
+                                                <ActionGate tile="garment" page="inventory" action="update" fallback={null}>
+                                                    <Button variant="outline" className="h-6 px-2">✎</Button>
+                                                </ActionGate>
+                                                <ActionGate tile="garment" page="inventory" action="delete" fallback={null}>
+                                                    <Button variant="outline" className="h-6 px-2">🗑</Button>
+                                                </ActionGate>
                                             </div>
                                         </td>
                                     </tr>

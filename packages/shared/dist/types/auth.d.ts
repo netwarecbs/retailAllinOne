@@ -8,6 +8,7 @@ export interface LoginResponse {
     user: User;
     tokens: Tokens;
     branches: Branch[];
+    authz?: Authorization;
 }
 export interface User {
     id: string;
@@ -33,4 +34,24 @@ export interface AuthState {
     isAuthenticated: boolean;
     isLoading: boolean;
     error: string | null;
+    authz: Authorization | null;
+}
+export type TileKey = 'garment' | 'pharmacy';
+export type GarmentPageKey = 'dashboard' | 'purchase' | 'inventory' | 'sales' | 'pos';
+export type PharmacyPageKey = 'dashboard';
+export type PageKey = GarmentPageKey | PharmacyPageKey;
+export interface AuthorizationActionMap {
+    [actionKey: string]: boolean;
+}
+export interface AuthorizationPage {
+    allowed: boolean;
+    actions?: AuthorizationActionMap;
+}
+export interface AuthorizationTile {
+    allowed: boolean;
+    pages: Record<string, AuthorizationPage>;
+}
+export interface Authorization {
+    version: number;
+    tiles: Record<TileKey, AuthorizationTile | undefined>;
 }

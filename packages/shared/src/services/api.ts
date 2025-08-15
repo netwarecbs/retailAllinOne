@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
-import { LoginRequest, LoginResponse } from '../types/auth';
+import { LoginRequest, LoginResponse, Authorization } from '../types/auth';
 
 class ApiService {
   private api: AxiosInstance;
@@ -84,7 +84,7 @@ class ApiService {
         // Store all tokens in localStorage
         this.setTokens(response.data.tokens);
 
-        // Also store user and branches data
+        // Also store user, branches and authorization data
         if (typeof window !== 'undefined') {
           localStorage.setItem('user_data', JSON.stringify(response.data.user));
           localStorage.setItem('branches_data', JSON.stringify(response.data.branches));
@@ -95,44 +95,8 @@ class ApiService {
         throw new Error('Invalid response format');
       }
     } catch (error: any) {
+
       console.error('Login API error:', error);
-
-      // For demo purposes when API is not available, provide mock authentication
-      if (credentials.username === 'rajesh' && credentials.password === 'password') {
-        const mockResponse: LoginResponse = {
-          status: 'success',
-          message: 'Login successful (demo mode)',
-          user: {
-            id: 'rajesh',
-            name: 'Rajesh Karmakar',
-            contact_no: '9474664779',
-            role: 'ceo'
-          },
-          tokens: {
-            accessToken: 'mock-access-token-' + Date.now(),
-            refreshToken: 'mock-refresh-token-' + Date.now(),
-            idToken: 'mock-id-token-' + Date.now(),
-            expiresIn: 3600
-          },
-          branches: [
-            {
-              bid: 4,
-              branch_name: 'Head',
-              db_name: 'head'
-            }
-          ]
-        };
-
-        // Store mock tokens and data
-        this.setTokens(mockResponse.tokens);
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('user_data', JSON.stringify(mockResponse.user));
-          localStorage.setItem('branches_data', JSON.stringify(mockResponse.branches));
-        }
-
-        return mockResponse;
-      }
-
       throw new Error(error.response?.data?.message || error.message || 'Login failed');
     }
   }

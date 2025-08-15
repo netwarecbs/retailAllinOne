@@ -23,6 +23,7 @@ This monorepo follows a modular architecture with:
 - **Consistent UI**: Professional design system with Tailwind CSS v4 and shadcn/ui
 - **Modular Architecture**: Easy to add new applications without breaking existing code
 - **API Integration**: Connected to external authentication API
+- **Centralized RBAC**: Role-based authorization JSON received at login, stored centrally, and used for dynamic UI rendering
 
 ## 🛠️ Tech Stack
 
@@ -81,12 +82,59 @@ This will:
 - **Pharmacy App**: http://localhost:3002
 
 ## 🔐 Authentication
+### RBAC Authorization JSON
+
+On successful login, the API can return an `authz` JSON defining allowed tiles, pages, and actions. It is persisted to `localStorage` (`authz_data`) and Redux (`auth.authz`). If the API doesn't supply it, a default per-role structure is generated in `@retail/shared`.
+
+Example shape:
+
+```json
+{
+  "version": 1,
+  "tiles": {
+    "garment": {
+      "allowed": true,
+      "pages": {
+        "dashboard": { "allowed": true },
+        "inventory": { "allowed": true, "actions": { "create": true, "update": true, "delete": false, "export": true } }
+      }
+    },
+    "pharmacy": { "allowed": true, "pages": { "dashboard": { "allowed": true } } }
+  }
+}
+```
+
+Helpers (via `@retail/shared`): `authzUtils.isTileAllowed`, `authzUtils.isPageAllowed`, `authzUtils.isActionAllowed`. React guards in `apps/web/components/RBAC.tsx`.
+
 
 The system uses username-based authentication (no email required):
 
 **Test Credentials:**
 - Username: `rajesh`
 - Password: `password`
+
+## RBAC System
+
+The system implements Role-Based Access Control (RBAC) for managing access to different application tiles, pages, and actions. Since the actual API doesn't return authorization data, the system is configured to provide full access to all features.
+
+### Current Configuration:
+
+- **Full Access**: All users have access to both Garment and Pharmacy tiles
+- **All Pages**: Users can access all pages within each tile
+- **All Actions**: Users can perform all actions (buttons, operations) on each page
+
+### RBAC Components:
+
+- **TileGuard**: Controls visibility of entire application tiles (Garment, Pharmacy)
+- **PageGuard**: Controls access to specific pages within tiles
+- **ActionGate**: Controls access to specific actions/buttons on pages
+- **NotAuthorized**: Fallback component shown when access is denied
+
+### Future Enhancement:
+
+When the backend API is updated to return authorization data in the login response, the system will automatically use that data to enforce role-based restrictions. The RBAC infrastructure is already in place and ready for this enhancement.
+
+The authorization data is generated during login and stored in Redux state and localStorage for persistence across sessions.
 
 ## 📁 Project Structure
 

@@ -1,12 +1,14 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { AuthState, LoginRequest, User } from '../types/auth';
+import { AuthState, LoginRequest, User, Authorization } from '../types/auth';
 import { apiService } from '../services/api';
+import { getAuthzForRole } from '../services/roles';
 
 const getInitialData = () => {
   if (typeof window !== 'undefined') {
     const accessToken = localStorage.getItem('access_token');
     const userData = localStorage.getItem('user_data');
     const branchesData = localStorage.getItem('branches_data');
+    const authzData = localStorage.getItem('authz_data');
 
     return {
       tokens: accessToken ? {
@@ -17,6 +19,7 @@ const getInitialData = () => {
       } : null,
       user: userData ? JSON.parse(userData) : null,
       branches: branchesData ? JSON.parse(branchesData) : [],
+      authz: authzData ? JSON.parse(authzData) as Authorization : null,
       isAuthenticated: !!accessToken
     };
   }
@@ -25,6 +28,7 @@ const getInitialData = () => {
     tokens: null,
     user: null,
     branches: [],
+    authz: null,
     isAuthenticated: false
   };
 };
@@ -35,6 +39,7 @@ const initialState: AuthState = {
   user: initialData.user,
   tokens: initialData.tokens,
   branches: initialData.branches,
+  authz: initialData.authz,
   isAuthenticated: initialData.isAuthenticated,
   isLoading: false,
   error: null,
@@ -47,6 +52,30 @@ export const loginUser = createAsyncThunk(
     try {
       const response = await apiService.login(credentials);
       if (response.status === 'success' && response.tokens && response.user) {
+        // Since API doesn't return authz, generate full access authorization
+        if (!response.authz) {
+          response.authz = {
+            version: 1,
+            tiles: {
+              garment: {
+                allowed: true,
+                pages: {
+                  dashboard: { allowed: true },
+                  purchase: { allowed: true, actions: { create: true, save: true, print: true, pdf: true, delete: true } },
+                  inventory: { allowed: true, actions: { create: true, update: true, delete: true, export: true, print: true, generateBarcode: true, manageHSN: true, manageUnits: true, categories: true, brand: true, size: true } },
+                  sales: { allowed: true, actions: { save: true, print: true, pdf: true, hold: true, view: true } },
+                  pos: { allowed: true, actions: { save: true, print: true, pdf: true, hold: true, view: true } }
+                }
+              },
+              pharmacy: {
+                allowed: true,
+                pages: {
+                  dashboard: { allowed: true, actions: { addMedicine: true, viewPrescriptions: true, viewExpiring: true, viewRevenue: true } }
+                }
+              }
+            }
+          };
+        }
         return response;
       } else {
         return rejectWithValue(response.message || 'Login failed');
@@ -95,6 +124,9 @@ const authSlice = createSlice({
       state.tokens = action.payload;
       state.isAuthenticated = true;
     },
+    setAuthorization: (state, action: PayloadAction<Authorization | null>) => {
+      state.authz = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -109,6 +141,12 @@ const authSlice = createSlice({
         state.tokens = action.payload.tokens;
         state.user = action.payload.user;
         state.branches = action.payload.branches;
+        // Prefer authz from API. If missing, generate from role and persist
+        const computedAuthz = action.payload.authz ?? (action.payload.user?.role ? getAuthzForRole(action.payload.user.role) : null);
+        state.authz = computedAuthz ?? null;
+        if (typeof window !== 'undefined') {
+          if (computedAuthz) localStorage.setItem('authz_data', JSON.stringify(computedAuthz));
+        }
         state.error = null;
       })
       .addCase(loginUser.rejected, (state, action) => {
@@ -120,6 +158,7 @@ const authSlice = createSlice({
         state.user = null;
         state.tokens = null;
         state.branches = [];
+        state.authz = null;
         state.isAuthenticated = false;
         state.error = null;
       })

@@ -17,7 +17,7 @@ services:
       - NODE_ENV=development
       - NEXT_TELEMETRY_DISABLED=1
     working_dir: /app/apps/web
-    command: npm run dev
+    command: sh -c "cd /app && npm run build:packages && cd apps/web && npm run dev"
     networks:
       - retail-network
 
@@ -37,7 +37,7 @@ services:
       - NODE_ENV=development
       - NEXT_TELEMETRY_DISABLED=1
     working_dir: /app/apps/garment
-    command: npm run dev
+    command: sh -c "cd /app && npm run build:packages && cd apps/garment && npm run dev"
     networks:
       - retail-network
 
@@ -57,7 +57,7 @@ services:
       - NODE_ENV=development
       - NEXT_TELEMETRY_DISABLED=1
     working_dir: /app/apps/pharmacy
-    command: npm run dev
+    command: sh -c "cd /app && npm run build:packages && cd apps/pharmacy && npm run dev"
     networks:
       - retail-network
 

@@ -9,6 +9,7 @@ export interface LoginResponse {
   user: User;
   tokens: Tokens;
   branches: Branch[];
+  authz?: Authorization; // Authorization JSON returned from login
 }
 
 export interface User {
@@ -39,4 +40,32 @@ export interface AuthState {
   isLoading: boolean;
   error: string | null;
 
+  // RBAC authorization JSON for the current user
+  authz: Authorization | null;
+}
+
+// RBAC Types
+export type TileKey = 'garment' | 'pharmacy';
+
+export type GarmentPageKey = 'dashboard' | 'purchase' | 'inventory' | 'sales' | 'pos';
+export type PharmacyPageKey = 'dashboard';
+export type PageKey = GarmentPageKey | PharmacyPageKey;
+
+export interface AuthorizationActionMap {
+  [actionKey: string]: boolean; // e.g. { create: true, delete: false }
+}
+
+export interface AuthorizationPage {
+  allowed: boolean;
+  actions?: AuthorizationActionMap;
+}
+
+export interface AuthorizationTile {
+  allowed: boolean;
+  pages: Record<string, AuthorizationPage>;
+}
+
+export interface Authorization {
+  version: number;
+  tiles: Record<TileKey, AuthorizationTile | undefined>;
 }

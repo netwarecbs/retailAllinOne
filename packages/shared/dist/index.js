@@ -2,6 +2,10 @@
 export * from './types/auth';
 // Services
 export { default as apiService } from './services/api';
+export * as authzUtils from './services/authorization';
+export * as roleAuthz from './services/roles';
+export { isTileAllowed, isPageAllowed, isActionAllowed, getAllowedPages } from './services/authorization';
+export { getAuthzForRole } from './services/roles';
 // Store
 export { store } from './store';
 export { default as authReducer } from './store/authSlice';
