@@ -44,7 +44,7 @@ export default function PharmacyPage() {
               </div>
               <h1 className="text-xl font-bold text-gray-900">Pharmacy Management</h1>
             </div>
-            
+
             <div className="flex items-center space-x-4">
               <Button
                 variant="outline"
@@ -54,7 +54,7 @@ export default function PharmacyPage() {
                 Back to Dashboard
               </Button>
               <span className="text-sm text-gray-700">
-                Welcome, {user?.name || user?.username || 'User'}
+                Welcome, {user?.name || 'User'}
               </span>
               <Button
                 variant="outline"

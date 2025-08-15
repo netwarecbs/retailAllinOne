@@ -63,8 +63,8 @@ export default function AdvancedSearchModal({
     // Extract unique brands and subcategories from products
     useEffect(() => {
         if (products.length > 0) {
-            const brands = [...new Set(products.map(p => p.brand))].sort();
-            const subcategories = [...new Set(products.map(p => p.subcategory))].sort();
+            const brands = [...new Set(products.map(p => p.brand).filter((brand): brand is string => Boolean(brand)))].sort();
+            const subcategories = [...new Set(products.map(p => p.subcategory).filter((subcategory): subcategory is string => Boolean(subcategory)))].sort();
             setUniqueBrands(brands);
             setUniqueSubcategories(subcategories);
         }
@@ -87,7 +87,7 @@ export default function AdvancedSearchModal({
                 product.name.toLowerCase().includes(query) ||
                 product.sku.toLowerCase().includes(query) ||
                 product.description.toLowerCase().includes(query) ||
-                product.barcode.includes(query)
+                (product.barcode && product.barcode.includes(query))
             );
         }
 
@@ -529,9 +529,11 @@ export default function AdvancedSearchModal({
                                                     }`}
                                                 onClick={() => handleProductToggle(product)}
                                             >
-                                                <div className="flex items-start gap-3">
+
+                                                {/* First Row */}
+                                                <div className="flex items-start gap-3 mb-3">
                                                     {/* Selection Indicator */}
-                                                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${isSelected
+                                                    {/* <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${isSelected
                                                         ? 'border-blue-500 bg-blue-500'
                                                         : 'border-gray-300'
                                                         }`}>
@@ -540,7 +542,7 @@ export default function AdvancedSearchModal({
                                                                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                                             </svg>
                                                         )}
-                                                    </div>
+                                                    </div> */}
 
                                                     <div className="w-16 h-16 bg-gray-200 rounded flex items-center justify-center flex-shrink-0">
                                                         {product.images && product.images.length > 0 ? (
@@ -557,19 +559,7 @@ export default function AdvancedSearchModal({
                                                     </div>
 
                                                     <div className="flex-1 min-w-0">
-                                                        <h4 className="font-medium text-sm text-gray-900 truncate">
-                                                            {product.name}
-                                                        </h4>
-                                                        <p className="text-xs text-gray-500 mt-1">
-                                                            SKU: {product.sku}
-                                                        </p>
-                                                        <p className="text-xs text-gray-500">
-                                                            {product.category} • {product.subcategory}
-                                                        </p>
-                                                        <p className="text-xs text-gray-500">
-                                                            Brand: {product.brand}
-                                                        </p>
-                                                        <div className="flex items-center justify-between mt-2">
+                                                        <div className="flex items-center justify-between">
                                                             <span className="text-sm font-semibold text-gray-900">
                                                                 ₹{product.price}
                                                             </span>
@@ -605,6 +595,22 @@ export default function AdvancedSearchModal({
                                                             </div>
                                                         </div>
                                                     </div>
+                                                </div>
+
+                                                {/* Second Row */}
+                                                <div className="border-t pt-3">
+                                                    <h4 className="font-medium text-sm text-gray-900 truncate">
+                                                        {product.name}
+                                                    </h4>
+                                                    <p className="text-xs text-gray-500 mt-1">
+                                                        SKU: {product.sku}
+                                                    </p>
+                                                    <p className="text-xs text-gray-500">
+                                                        {product.category} • {product.subcategory}
+                                                    </p>
+                                                    <p className="text-xs text-gray-500">
+                                                        Brand: {product.brand}
+                                                    </p>
                                                 </div>
                                             </div>
                                         );
@@ -688,55 +694,58 @@ export default function AdvancedSearchModal({
                                                 </div>
 
                                                 {/* Configuration Options */}
-                                                <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                                                    {/* Size Selection */}
-                                                    {product.sizes && product.sizes.length > 0 && (
-                                                        <div>
-                                                            <label className={`block text-sm font-medium mb-2 ${hasError && !selectedProduct.selectedSize ? 'text-red-600' : 'text-gray-700'
-                                                                }`}>
-                                                                Size *
-                                                            </label>
-                                                            <select
-                                                                value={selectedProduct.selectedSize}
-                                                                onChange={(e) => handleProductConfigChange(product.id, 'selectedSize', e.target.value)}
-                                                                className={`w-full border rounded px-3 py-2 text-sm ${hasError && !selectedProduct.selectedSize ? 'border-red-500 focus:border-red-500' : ''
-                                                                    }`}
-                                                            >
-                                                                <option value="">Select Size</option>
-                                                                {product.sizes.map((size: any) => (
-                                                                    <option key={size.id} value={size.name}>
-                                                                        {size.name} (Stock: {size.stock})
-                                                                    </option>
-                                                                ))}
-                                                            </select>
-                                                            {hasError && !selectedProduct.selectedSize && (
-                                                                <p className="text-red-500 text-xs mt-1">{errorMessage}</p>
-                                                            )}
-                                                        </div>
-                                                    )}
+                                                <div className="mt-4 space-y-4">
+                                                    {/* First Row - Size and Color */}
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        {/* Size Selection */}
+                                                        {product.sizes && product.sizes.length > 0 && (
+                                                            <div>
+                                                                <label className={`block text-sm font-medium mb-2 ${hasError && !selectedProduct.selectedSize ? 'text-red-600' : 'text-gray-700'
+                                                                    }`}>
+                                                                    Size *
+                                                                </label>
+                                                                <select
+                                                                    value={selectedProduct.selectedSize}
+                                                                    onChange={(e) => handleProductConfigChange(product.id, 'selectedSize', e.target.value)}
+                                                                    className={`w-full border rounded px-3 py-2 text-sm ${hasError && !selectedProduct.selectedSize ? 'border-red-500 focus:border-red-500' : ''
+                                                                        }`}
+                                                                >
+                                                                    <option value="">Select Size</option>
+                                                                    {product.sizes.map((size: any) => (
+                                                                        <option key={size.id} value={size.name}>
+                                                                            {size.name} (Stock: {size.stock})
+                                                                        </option>
+                                                                    ))}
+                                                                </select>
+                                                                {hasError && !selectedProduct.selectedSize && (
+                                                                    <p className="text-red-500 text-xs mt-1">{errorMessage}</p>
+                                                                )}
+                                                            </div>
+                                                        )}
 
-                                                    {/* Color Selection */}
-                                                    {product.colors && product.colors.length > 0 && (
-                                                        <div>
-                                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                                Color
-                                                            </label>
-                                                            <select
-                                                                value={selectedProduct.selectedColor}
-                                                                onChange={(e) => handleProductConfigChange(product.id, 'selectedColor', e.target.value)}
-                                                                className="w-full border rounded px-3 py-2 text-sm"
-                                                            >
-                                                                <option value="">Select Color</option>
-                                                                {product.colors.map((color: any) => (
-                                                                    <option key={color.id} value={color.name}>
-                                                                        {color.name}
-                                                                    </option>
-                                                                ))}
-                                                            </select>
-                                                        </div>
-                                                    )}
+                                                        {/* Color Selection */}
+                                                        {product.colors && product.colors.length > 0 && (
+                                                            <div>
+                                                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                                    Color
+                                                                </label>
+                                                                <select
+                                                                    value={selectedProduct.selectedColor}
+                                                                    onChange={(e) => handleProductConfigChange(product.id, 'selectedColor', e.target.value)}
+                                                                    className="w-full border rounded px-3 py-2 text-sm"
+                                                                >
+                                                                    <option value="">Select Color</option>
+                                                                    {product.colors.map((color: any) => (
+                                                                        <option key={color.id} value={color.name}>
+                                                                            {color.name}
+                                                                        </option>
+                                                                    ))}
+                                                                </select>
+                                                            </div>
+                                                        )}
+                                                    </div>
 
-                                                    {/* Quantity Selection */}
+                                                    {/* Second Row - Quantity */}
                                                     <div>
                                                         <label className={`block text-sm font-medium mb-2 ${hasError && selectedProduct.quantity <= 0 ? 'text-red-600' : 'text-gray-700'
                                                             }`}>

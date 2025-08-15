@@ -15,7 +15,7 @@ export { loginUser, logoutUser, fetchUserProfile, clearError, setUser, setTokens
 export { default as productReducer } from './store/productSlice';
 export { fetchProducts, fetchProductById, searchProductsByBarcode, clearProducts, setSelectedProduct, setSearchParams, clearError as clearProductError } from './store/productSlice';
 export { default as salesReducer } from './store/salesSlice';
-export { createSale, searchCustomers, addToCart, updateCartItem, removeFromCart, clearCart, setCustomer, updatePaymentDetails, setDiscount, clearError as clearSalesError } from './store/salesSlice';
+export { createSale, searchCustomers, addToCart, updateCartItem, removeFromCart, clearCart, setCustomer, updatePaymentDetails, setDiscount, setExtraLess, setSavings, updatePaymentAmount, holdInvoice, loadHeldInvoice, removeHeldInvoice, setInvoiceNumber, clearError as clearSalesError } from './store/salesSlice';
 // Sample Data
 export { sampleProducts, sampleCategories } from './data/sampleProducts';
 export { sampleCustomers } from './data/sampleCustomers';

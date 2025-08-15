@@ -54,7 +54,7 @@ export default function GarmentPage() {
                 Back to Dashboard
               </Button>
               <span className="text-sm text-gray-700">
-                Welcome, {user?.name || user?.username || 'User'}
+                Welcome, {user?.name || 'User'}
               </span>
               <Button
                 variant="outline"

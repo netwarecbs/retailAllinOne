@@ -190,7 +190,7 @@ export default function ProductSelector({ onProductSelect }: ProductSelectorProp
                                                 SKU: {product.sku} | ₹{product.price}
                                             </div>
                                             <div className="text-xs text-gray-400">
-                                                Sizes: {product.sizes.map(size => `${size.name}(${size.stock})`).join(', ')}
+                                                Sizes: {product.sizes.map((size: { name: string; stock: number }) => `${size.name}(${size.stock})`).join(', ')}
                                             </div>
                                         </div>
                                         <div className="text-xs text-gray-500">
@@ -304,7 +304,7 @@ export default function ProductSelector({ onProductSelect }: ProductSelectorProp
                                                             </span>
                                                             {product.sizes && product.sizes.length > 0 && (
                                                                 <span className="text-xs text-gray-500">
-                                                                    Sizes: {product.sizes.map(s => `${s.name}(${s.stock})`).join(', ')}
+                                                                    Sizes: {product.sizes.map((s: { name: string; stock: number }) => `${s.name}(${s.stock})`).join(', ')}
                                                                 </span>
                                                             )}
                                                         </div>
