@@ -8,6 +8,7 @@ import { AppDispatch, RootState, setCustomer, addToCart, removeFromCart, updateC
 import { Customer, Product } from '@retail/shared'
 import { sampleCustomers, sampleProducts } from '@retail/shared'
 import ProductSelectionModal from '../../../components/ProductSelectionModal'
+import toast, { Toaster } from 'react-hot-toast'
 
 interface RecentItem {
     id: string
@@ -77,6 +78,8 @@ export default function GarmentPOSPage() {
     // Modal states
     const [showHeldInvoicesModal, setShowHeldInvoicesModal] = useState(false)
     const [showInvoicePreview, setShowInvoicePreview] = useState(false)
+    const [showConfirmModal, setShowConfirmModal] = useState(false)
+    const [invoiceToDelete, setInvoiceToDelete] = useState<string | null>(null)
 
     const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -176,7 +179,13 @@ export default function GarmentPOSPage() {
 
     const handleSaveNewCustomer = () => {
         if (!newCustomer.name.trim()) {
-            alert('Customer name is required')
+            toast.error('Customer name is required', {
+                duration: 3000,
+                style: {
+                    background: '#EF4444',
+                    color: '#fff',
+                },
+            })
             return
         }
 
@@ -394,7 +403,13 @@ export default function GarmentPOSPage() {
 
     const handleEnterProduct = () => {
         if (!selectedProduct) {
-            alert('Please scan a product first')
+            toast.error('Please scan a product first', {
+                duration: 3000,
+                style: {
+                    background: '#EF4444',
+                    color: '#fff',
+                },
+            })
             return
         }
 
@@ -457,12 +472,24 @@ export default function GarmentPOSPage() {
 
     const handleSaveInvoice = async () => {
         if (cart.length === 0) {
-            alert('No items in cart to save')
+            toast.error('No items in cart to save', {
+                duration: 3000,
+                style: {
+                    background: '#EF4444',
+                    color: '#fff',
+                },
+            })
             return
         }
 
         if (!customer) {
-            alert('Please select a customer')
+            toast.error('Please select a customer', {
+                duration: 3000,
+                style: {
+                    background: '#EF4444',
+                    color: '#fff',
+                },
+            })
             return
         }
 
@@ -499,21 +526,45 @@ export default function GarmentPOSPage() {
             }
 
             await dispatch(createSale(saleData)).unwrap()
-            alert('Invoice saved successfully!')
+            toast.success('Invoice saved successfully!', {
+                duration: 3000,
+                style: {
+                    background: '#10B981',
+                    color: '#fff',
+                },
+            })
         } catch (error) {
             console.error('Error saving invoice:', error)
-            alert('Failed to save invoice. Please try again.')
+            toast.error('Failed to save invoice. Please try again.', {
+                duration: 5000,
+                style: {
+                    background: '#EF4444',
+                    color: '#fff',
+                },
+            })
         }
     }
 
     const handleSaveAndPrint = async () => {
         if (cart.length === 0) {
-            alert('No items in cart to save')
+            toast.error('No items in cart to save', {
+                duration: 3000,
+                style: {
+                    background: '#EF4444',
+                    color: '#fff',
+                },
+            })
             return
         }
 
         if (!customer) {
-            alert('Please select a customer')
+            toast.error('Please select a customer', {
+                duration: 3000,
+                style: {
+                    background: '#EF4444',
+                    color: '#fff',
+                },
+            })
             return
         }
 
@@ -522,22 +573,46 @@ export default function GarmentPOSPage() {
 
     const handleGeneratePDF = async () => {
         if (cart.length === 0) {
-            alert('No items in cart to generate PDF')
+            toast.error('No items in cart to generate PDF', {
+                duration: 3000,
+                style: {
+                    background: '#EF4444',
+                    color: '#fff',
+                },
+            })
             return
         }
 
         // TODO: Implement PDF generation
-        alert('PDF generation feature will be implemented soon!')
+        toast('PDF generation feature will be implemented soon!', {
+            duration: 4000,
+            style: {
+                background: '#3B82F6',
+                color: '#fff',
+            },
+        })
     }
 
     const handleHoldInvoice = () => {
         if (cart.length === 0) {
-            alert('No items in cart to hold')
+            toast.error('No items in cart to hold', {
+                duration: 3000,
+                style: {
+                    background: '#EF4444',
+                    color: '#fff',
+                },
+            })
             return
         }
 
         dispatch(holdInvoice())
-        alert('Invoice held successfully!')
+        toast.success('Invoice held successfully!', {
+            duration: 3000,
+            style: {
+                background: '#10B981',
+                color: '#fff',
+            },
+        })
     }
 
     const handleViewAllHeld = () => {
@@ -550,8 +625,22 @@ export default function GarmentPOSPage() {
     }
 
     const handleRemoveHeldInvoice = (invoiceId: string) => {
-        if (confirm('Are you sure you want to remove this held invoice?')) {
-            dispatch(removeHeldInvoice(invoiceId))
+        setInvoiceToDelete(invoiceId)
+        setShowConfirmModal(true)
+    }
+
+    const confirmRemoveHeldInvoice = () => {
+        if (invoiceToDelete) {
+            dispatch(removeHeldInvoice(invoiceToDelete))
+            toast.success('Held invoice removed successfully!', {
+                duration: 3000,
+                style: {
+                    background: '#10B981',
+                    color: '#fff',
+                },
+            })
+            setInvoiceToDelete(null)
+            setShowConfirmModal(false)
         }
     }
 
@@ -1644,7 +1733,13 @@ export default function GarmentPOSPage() {
                                         setShowInvoicePreview(false)
                                     } catch (error) {
                                         console.error('Error saving invoice:', error)
-                                        alert('Failed to save invoice. Please try again.')
+                                        toast.error('Failed to save invoice. Please try again.', {
+                                            duration: 5000,
+                                            style: {
+                                                background: '#EF4444',
+                                                color: '#fff',
+                                            },
+                                        })
                                     }
                                 }}
                             >
@@ -1654,6 +1749,61 @@ export default function GarmentPOSPage() {
                     </div>
                 </div>
             )}
+
+            {/* Confirmation Modal */}
+            {showConfirmModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-lg max-w-md w-full p-6">
+                        <div className="text-center">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Confirm Action</h3>
+                            <p className="text-gray-600 mb-6">
+                                Are you sure you want to remove this held invoice?
+                            </p>
+                            <div className="flex gap-3 justify-center">
+                                <Button
+                                    variant="outline"
+                                    onClick={() => {
+                                        setShowConfirmModal(false)
+                                        setInvoiceToDelete(null)
+                                    }}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    className="bg-red-600 hover:bg-red-700 text-white"
+                                    onClick={confirmRemoveHeldInvoice}
+                                >
+                                    Remove
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Toast Notifications */}
+            <Toaster
+                position="top-right"
+                toastOptions={{
+                    duration: 4000,
+                    style: {
+                        background: '#363636',
+                        color: '#fff',
+                    },
+                    success: {
+                        duration: 3000,
+                        style: {
+                            background: '#10B981',
+                        },
+                    },
+                    error: {
+                        duration: 5000,
+                        style: {
+                            background: '#EF4444',
+                        },
+                    },
+                }}
+            />
         </PageGuard>
     )
 }
