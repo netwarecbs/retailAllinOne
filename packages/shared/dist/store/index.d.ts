@@ -1,8 +1,12 @@
 export declare const store: import("@reduxjs/toolkit").EnhancedStore<{
     auth: import("..").AuthState;
+    products: import("./productSlice").ProductState;
+    sales: import("./salesSlice").SalesState;
 }, import("redux").UnknownAction, import("@reduxjs/toolkit").Tuple<[import("redux").StoreEnhancer<{
     dispatch: import("redux-thunk").ThunkDispatch<{
         auth: import("..").AuthState;
+        products: import("./productSlice").ProductState;
+        sales: import("./salesSlice").SalesState;
     }, undefined, import("redux").UnknownAction>;
 }>, import("redux").StoreEnhancer]>>;
 export type RootState = ReturnType<typeof store.getState>;

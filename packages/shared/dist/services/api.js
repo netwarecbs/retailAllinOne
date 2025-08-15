@@ -141,6 +141,129 @@ class ApiService {
         const response = await this.api.delete(url);
         return response.data;
     }
+    // Product API methods
+    async getProducts(params) {
+        try {
+            // For now, return mock data. In real implementation, this would be an API call
+            const { sampleProducts } = await import('../data/sampleProducts');
+            let filteredProducts = [...sampleProducts];
+            if (params?.query) {
+                const query = params.query.toLowerCase();
+                filteredProducts = filteredProducts.filter(product => product.name.toLowerCase().includes(query) ||
+                    product.description.toLowerCase().includes(query) ||
+                    product.sku.toLowerCase().includes(query) ||
+                    product.barcode?.toLowerCase().includes(query));
+            }
+            if (params?.category) {
+                filteredProducts = filteredProducts.filter(product => product.category === params.category);
+            }
+            if (params?.inStock) {
+                filteredProducts = filteredProducts.filter(product => product.stock > 0);
+            }
+            const page = params?.page || 1;
+            const limit = params?.limit || 10;
+            const startIndex = (page - 1) * limit;
+            const endIndex = startIndex + limit;
+            const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
+            return {
+                products: paginatedProducts,
+                total: filteredProducts.length,
+                page,
+                limit,
+                totalPages: Math.ceil(filteredProducts.length / limit)
+            };
+        }
+        catch (error) {
+            throw new Error(error.response?.data?.message || 'Failed to fetch products');
+        }
+    }
+    async getProductById(id) {
+        try {
+            // For now, return mock data. In real implementation, this would be an API call
+            const { sampleProducts } = await import('../data/sampleProducts');
+            const product = sampleProducts.find(p => p.id === id);
+            if (!product) {
+                throw new Error('Product not found');
+            }
+            return product;
+        }
+        catch (error) {
+            throw new Error(error.response?.data?.message || 'Failed to fetch product');
+        }
+    }
+    async searchProductsByBarcode(barcode) {
+        try {
+            // For now, return mock data. In real implementation, this would be an API call
+            const { sampleProducts } = await import('../data/sampleProducts');
+            const product = sampleProducts.find(p => p.barcode === barcode);
+            return product || null;
+        }
+        catch (error) {
+            throw new Error(error.response?.data?.message || 'Failed to search product');
+        }
+    }
+    // Sales API methods
+    async createSale(saleData) {
+        try {
+            // For now, return mock data. In real implementation, this would be an API call
+            const newSale = {
+                ...saleData,
+                id: `sale_${Date.now()}`,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+            // Simulate API delay
+            await new Promise(resolve => setTimeout(resolve, 500));
+            return newSale;
+        }
+        catch (error) {
+            throw new Error(error.response?.data?.message || 'Failed to create sale');
+        }
+    }
+    async getSales(params) {
+        try {
+            // For now, return mock data. In real implementation, this would be an API call
+            const mockSales = [];
+            return {
+                sales: mockSales,
+                total: 0,
+                page: params?.page || 1,
+                limit: params?.limit || 10,
+                totalPages: 0
+            };
+        }
+        catch (error) {
+            throw new Error(error.response?.data?.message || 'Failed to fetch sales');
+        }
+    }
+    async getSaleById(id) {
+        try {
+            // For now, return mock data. In real implementation, this would be an API call
+            throw new Error('Sale not found');
+        }
+        catch (error) {
+            throw new Error(error.response?.data?.message || 'Failed to fetch sale');
+        }
+    }
+    // Customer API methods
+    async searchCustomers(query) {
+        try {
+            // For now, return mock data. In real implementation, this would be an API call
+            const { sampleCustomers } = await import('../data/sampleCustomers');
+            if (query) {
+                const searchQuery = query.toLowerCase();
+                return sampleCustomers.filter(customer => customer.name.toLowerCase().includes(searchQuery) ||
+                    customer.phone?.includes(query) ||
+                    customer.email?.toLowerCase().includes(searchQuery) ||
+                    customer.pan?.toLowerCase().includes(searchQuery) ||
+                    customer.gstin?.toLowerCase().includes(searchQuery));
+            }
+            return sampleCustomers;
+        }
+        catch (error) {
+            throw new Error(error.response?.data?.message || 'Failed to search customers');
+        }
+    }
 }
 export const apiService = new ApiService();
 export default apiService;

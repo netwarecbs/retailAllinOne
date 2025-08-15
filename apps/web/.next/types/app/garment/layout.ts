@@ -1,4 +1,4 @@
-// File: /app/apps/web/app/garment/layout.tsx
+// File: D:\work\netware\retailAllinOne\apps\web\app\garment\layout.tsx
 import * as entry from '../../../../app/garment/layout.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

@@ -1,5 +1,7 @@
 // Types
 export * from './types/auth';
+export * from './types/product';
+export * from './types/sales';
 // Services
 export { default as apiService } from './services/api';
 export * as authzUtils from './services/authorization';
@@ -10,3 +12,10 @@ export { getAuthzForRole } from './services/roles';
 export { store } from './store';
 export { default as authReducer } from './store/authSlice';
 export { loginUser, logoutUser, fetchUserProfile, clearError, setUser, setTokens } from './store/authSlice';
+export { default as productReducer } from './store/productSlice';
+export { fetchProducts, fetchProductById, searchProductsByBarcode, clearProducts, setSelectedProduct, setSearchParams, clearError as clearProductError } from './store/productSlice';
+export { default as salesReducer } from './store/salesSlice';
+export { createSale, searchCustomers, addToCart, updateCartItem, removeFromCart, clearCart, setCustomer, updatePaymentDetails, setDiscount, clearError as clearSalesError } from './store/salesSlice';
+// Sample Data
+export { sampleProducts, sampleCategories } from './data/sampleProducts';
+export { sampleCustomers } from './data/sampleCustomers';

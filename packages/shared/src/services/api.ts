@@ -1,5 +1,7 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { LoginRequest, LoginResponse, Authorization } from '../types/auth';
+import { Product, ProductSearchParams, ProductResponse } from '../types/product';
+import { Sale, SaleSearchParams, SaleResponse, Customer } from '../types/sales';
 
 class ApiService {
   private api: AxiosInstance;
@@ -166,6 +168,149 @@ class ApiService {
   async delete<T>(url: string): Promise<T> {
     const response = await this.api.delete<T>(url);
     return response.data;
+  }
+
+  // Product API methods
+  async getProducts(params?: ProductSearchParams): Promise<ProductResponse> {
+    try {
+      // For now, return mock data. In real implementation, this would be an API call
+      const { sampleProducts } = await import('../data/sampleProducts');
+
+      let filteredProducts = [...sampleProducts];
+
+      if (params?.query) {
+        const query = params.query.toLowerCase();
+        filteredProducts = filteredProducts.filter(product =>
+          product.name.toLowerCase().includes(query) ||
+          product.description.toLowerCase().includes(query) ||
+          product.sku.toLowerCase().includes(query) ||
+          product.barcode?.toLowerCase().includes(query)
+        );
+      }
+
+      if (params?.category) {
+        filteredProducts = filteredProducts.filter(product =>
+          product.category === params.category
+        );
+      }
+
+      if (params?.inStock) {
+        filteredProducts = filteredProducts.filter(product => product.stock > 0);
+      }
+
+      const page = params?.page || 1;
+      const limit = params?.limit || 10;
+      const startIndex = (page - 1) * limit;
+      const endIndex = startIndex + limit;
+      const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
+
+      return {
+        products: paginatedProducts,
+        total: filteredProducts.length,
+        page,
+        limit,
+        totalPages: Math.ceil(filteredProducts.length / limit)
+      };
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to fetch products');
+    }
+  }
+
+  async getProductById(id: string): Promise<Product> {
+    try {
+      // For now, return mock data. In real implementation, this would be an API call
+      const { sampleProducts } = await import('../data/sampleProducts');
+      const product = sampleProducts.find(p => p.id === id);
+
+      if (!product) {
+        throw new Error('Product not found');
+      }
+
+      return product;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to fetch product');
+    }
+  }
+
+  async searchProductsByBarcode(barcode: string): Promise<Product | null> {
+    try {
+      // For now, return mock data. In real implementation, this would be an API call
+      const { sampleProducts } = await import('../data/sampleProducts');
+      const product = sampleProducts.find(p => p.barcode === barcode);
+
+      return product || null;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to search product');
+    }
+  }
+
+  // Sales API methods
+  async createSale(saleData: Omit<Sale, 'id' | 'createdAt' | 'updatedAt'>): Promise<Sale> {
+    try {
+      // For now, return mock data. In real implementation, this would be an API call
+      const newSale: Sale = {
+        ...saleData,
+        id: `sale_${Date.now()}`,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      return newSale;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to create sale');
+    }
+  }
+
+  async getSales(params?: SaleSearchParams): Promise<SaleResponse> {
+    try {
+      // For now, return mock data. In real implementation, this would be an API call
+      const mockSales: Sale[] = [];
+
+      return {
+        sales: mockSales,
+        total: 0,
+        page: params?.page || 1,
+        limit: params?.limit || 10,
+        totalPages: 0
+      };
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to fetch sales');
+    }
+  }
+
+  async getSaleById(id: string): Promise<Sale> {
+    try {
+      // For now, return mock data. In real implementation, this would be an API call
+      throw new Error('Sale not found');
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to fetch sale');
+    }
+  }
+
+  // Customer API methods
+  async searchCustomers(query: string): Promise<Customer[]> {
+    try {
+      // For now, return mock data. In real implementation, this would be an API call
+      const { sampleCustomers } = await import('../data/sampleCustomers');
+
+      if (query) {
+        const searchQuery = query.toLowerCase();
+        return sampleCustomers.filter(customer =>
+          customer.name.toLowerCase().includes(searchQuery) ||
+          customer.phone?.includes(query) ||
+          customer.email?.toLowerCase().includes(searchQuery) ||
+          customer.pan?.toLowerCase().includes(searchQuery) ||
+          customer.gstin?.toLowerCase().includes(searchQuery)
+        );
+      }
+
+      return sampleCustomers;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to search customers');
+    }
   }
 }
 
