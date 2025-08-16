@@ -34,6 +34,44 @@ export const sampleProducts: Product[] = [
             'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop',
             'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop'
         ],
+        sizeImages: [
+            {
+                id: '1-size-1',
+                imageUrl: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop',
+                sizeId: '1-1',
+                sizeName: '2-3Y',
+                description: 'White formal shirt in 2-3Y size',
+                isMain: true
+            },
+            {
+                id: '1-size-2',
+                imageUrl: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop',
+                sizeId: '1-2',
+                sizeName: '4-5Y',
+                description: 'Light blue formal shirt in 4-5Y size',
+                isMain: false
+            }
+        ],
+        colorImages: [
+            {
+                id: '1-color-1',
+                imageUrl: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop',
+                colorId: '1-1',
+                colorName: 'White',
+                colorCode: '#FFFFFF',
+                description: 'White formal shirt',
+                isMain: true
+            },
+            {
+                id: '1-color-2',
+                imageUrl: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop',
+                colorId: '1-2',
+                colorName: 'Light Blue',
+                colorCode: '#87CEEB',
+                description: 'Light blue formal shirt',
+                isMain: false
+            }
+        ],
         tags: ['boys', 'shirt', 'formal', 'cotton', 'school'],
         isActive: true,
         createdAt: '2024-01-15T10:00:00Z',
@@ -73,6 +111,27 @@ export const sampleProducts: Product[] = [
             'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop',
             'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop'
         ],
+        sizeImages: [
+            {
+                id: '2-size-1',
+                imageUrl: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop',
+                sizeId: '2-1',
+                sizeName: '2-3Y',
+                description: 'Red casual t-shirt in 2-3Y size',
+                isMain: true
+            }
+        ],
+        colorImages: [
+            {
+                id: '2-color-1',
+                imageUrl: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop',
+                colorId: '2-1',
+                colorName: 'Red',
+                colorCode: '#FF0000',
+                description: 'Red casual t-shirt',
+                isMain: true
+            }
+        ],
         tags: ['boys', 't-shirt', 'casual', 'daily-wear'],
         isActive: true,
         createdAt: '2024-01-15T10:00:00Z',
@@ -110,6 +169,8 @@ export const sampleProducts: Product[] = [
             'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop',
             'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop'
         ],
+        sizeImages: [],
+        colorImages: [],
         tags: ['boys', 'polo', 'semi-formal', 'classic'],
         isActive: true,
         createdAt: '2024-01-15T10:00:00Z',
@@ -149,6 +210,8 @@ export const sampleProducts: Product[] = [
             'https://images.unsplash.com/photo-1553451191-6d5f2c2c1c1c?w=400&h=400&fit=crop',
             'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop'
         ],
+        sizeImages: [],
+        colorImages: [],
         tags: ['baby', 'romper', 'set', 'soft', 'comfortable'],
         isActive: true,
         createdAt: '2024-01-15T10:00:00Z',
