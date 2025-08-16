@@ -6,6 +6,15 @@ yarn-error.log*
 
 # Next.js
 .next/
+apps/web/.next/
+apps/web/node_modules/
+apps/web/dist/
+apps/garment/node_modules/
+apps/garment/.next/
+apps/garment/dist/
+apps/pharmacy/node_modules/
+apps/pharmacy/.next/
+apps/pharmacy/dist/
 
 # Environment variables
 .env

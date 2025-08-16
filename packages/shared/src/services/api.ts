@@ -199,7 +199,8 @@ class ApiService {
       }
 
       const page = params?.page || 1;
-      const limit = params?.limit || 10;
+      //const limit = params?.limit || 200;
+      const limit = 200;
       const startIndex = (page - 1) * limit;
       const endIndex = startIndex + limit;
       const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
