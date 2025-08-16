@@ -26,15 +26,25 @@
       "static/chunks/main-app.js",
       "static/chunks/app/garment/layout.js"
     ],
-    "/garment/pos/page": [
+    "/login/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/garment/pos/page.js"
+      "static/chunks/app/login/page.js"
+    ],
+    "/garment/inventory/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/garment/inventory/page.js"
     ],
     "/garment/sales/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/garment/sales/page.js"
+    ],
+    "/garment/pos/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/garment/pos/page.js"
     ]
   }
 }
