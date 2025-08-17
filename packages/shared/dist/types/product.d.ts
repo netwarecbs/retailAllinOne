@@ -17,6 +17,8 @@ export interface Product {
     sizes: ProductSize[];
     colors: ProductColor[];
     images: string[];
+    sizeImages?: ProductSizeImage[];
+    colorImages?: ProductColorImage[];
     tags: string[];
     isActive: boolean;
     createdAt: string;
@@ -34,6 +36,23 @@ export interface ProductColor {
     code: string;
     stock: number;
     price?: number;
+}
+export interface ProductSizeImage {
+    id: string;
+    imageUrl: string;
+    sizeId: string;
+    sizeName: string;
+    description?: string;
+    isMain: boolean;
+}
+export interface ProductColorImage {
+    id: string;
+    imageUrl: string;
+    colorId: string;
+    colorName: string;
+    colorCode: string;
+    description?: string;
+    isMain: boolean;
 }
 export interface Category {
     id: string;

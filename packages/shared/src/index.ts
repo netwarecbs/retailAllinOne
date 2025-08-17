@@ -22,6 +22,25 @@ export { default as salesReducer } from './store/salesSlice';
 export type { SalesState } from './store/salesSlice';
 export { createSale, searchCustomers, addToCart, updateCartItem, removeFromCart, clearCart, setCustomer, updatePaymentDetails, setDiscount, setExtraLess, setSavings, updatePaymentAmount, holdInvoice, loadHeldInvoice, removeHeldInvoice, setInvoiceNumber, clearError as clearSalesError } from './store/salesSlice';
 
+export { default as purchaseReducer } from './store/purchaseSlice';
+export type { PurchaseState, PurchaseItem, Supplier, PurchaseOrder } from './store/purchaseSlice';
+export {
+    fetchPurchaseOrders,
+    createPurchaseOrder,
+    fetchSuppliers,
+    createSupplier,
+    setCurrentPurchaseOrder,
+    addPurchaseItem,
+    updatePurchaseItem,
+    removePurchaseItem,
+    updateSupplier,
+    updatePaymentMethods,
+    setExpenseCategory,
+    clearCurrentPurchaseOrder,
+    setSelectedSupplier,
+    clearError as clearPurchaseError
+} from './store/purchaseSlice';
+
 // RBAC types
 export type { Authorization, AuthorizationTile, AuthorizationPage, AuthorizationActionMap, TileKey, PageKey } from './types/auth';
 

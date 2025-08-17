@@ -16,6 +16,8 @@ export { default as productReducer } from './store/productSlice';
 export { fetchProducts, fetchProductById, searchProductsByBarcode, clearProducts, setSelectedProduct, setSearchParams, clearError as clearProductError } from './store/productSlice';
 export { default as salesReducer } from './store/salesSlice';
 export { createSale, searchCustomers, addToCart, updateCartItem, removeFromCart, clearCart, setCustomer, updatePaymentDetails, setDiscount, setExtraLess, setSavings, updatePaymentAmount, holdInvoice, loadHeldInvoice, removeHeldInvoice, setInvoiceNumber, clearError as clearSalesError } from './store/salesSlice';
+export { default as purchaseReducer } from './store/purchaseSlice';
+export { fetchPurchaseOrders, createPurchaseOrder, fetchSuppliers, createSupplier, setCurrentPurchaseOrder, addPurchaseItem, updatePurchaseItem, removePurchaseItem, updateSupplier, updatePaymentMethods, setExpenseCategory, clearCurrentPurchaseOrder, setSelectedSupplier, clearError as clearPurchaseError } from './store/purchaseSlice';
 // Sample Data
 export { sampleProducts, sampleCategories } from './data/sampleProducts';
 export { sampleCustomers } from './data/sampleCustomers';
