@@ -109,6 +109,18 @@ export default function GarmentInventoryPage() {
     // Products state - initialize with sample products
     const [products, setProducts] = useState<Product[]>(sampleProducts)
 
+    // Loading state for the main inventory page
+    const [isLoading, setIsLoading] = useState(true)
+
+    // Simulate loading on component mount
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setIsLoading(false)
+        }, 1500) // Simulate 1.5 seconds loading time
+
+        return () => clearTimeout(timer)
+    }, [])
+
     // Get unique categories and brands for filters
     const categories = useMemo(() => {
         const uniqueCategories = [...new Set(products.map(p => p.category))]
@@ -2475,395 +2487,532 @@ export default function GarmentInventoryPage() {
     return (
         <main className="max-w-7xl mx-auto py-4 sm:px-6 lg:px-8">
             <div className="px-4 sm:px-0 space-y-4">
-                {/* Title bar with stats */}
-                <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white text-sm font-semibold px-4 py-3 rounded-lg shadow-lg flex justify-between items-center">
-                    <span>{'<<'} Inventory Management</span>
-                    <div className="flex items-center gap-4 text-xs">
-                        <span>Total Products: {sampleProducts.length}</span>
-                        <span>Active Filters: {activeFiltersCount}</span>
-                    </div>
-                </div>
+                {/* Loading State */}
+                {isLoading ? (
+                    <>
+                        {/* Title bar skeleton */}
+                        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white text-sm font-semibold px-4 py-3 rounded-lg shadow-lg flex justify-between items-center">
+                            <Skeleton className="h-6 w-48 bg-blue-500" />
+                            <div className="flex items-center gap-4">
+                                <Skeleton className="h-4 w-32 bg-blue-500" />
+                                <Skeleton className="h-4 w-28 bg-blue-500" />
+                            </div>
+                        </div>
 
-                {/* Advanced Search Bar */}
-                <Card className="border-0 shadow-lg bg-gradient-to-r from-gray-50 to-blue-50">
-                    <CardContent className="p-6">
-                        <div className="space-y-4">
-                            {/* Main Search */}
-                            <div className="relative">
-                                <div className="flex items-center gap-3">
-                                    <div className="flex-1 relative">
-                                        <Input
-                                            className="h-12 pl-12 pr-4 text-base border-2 border-blue-200 focus:border-blue-500 rounded-lg shadow-sm"
-                                            placeholder="Search products by name, SKU, barcode, or description..."
-                                            value={searchTerm}
-                                            onChange={(e) => setSearchTerm(e.target.value)}
-                                        />
-                                        <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500">
-                                            🔍
-                                        </div>
-                                        {showSuggestions && searchSuggestions.length > 0 && (
-                                            <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg z-10 mt-1">
-                                                {searchSuggestions.map((suggestion, index) => (
-                                                    <div
-                                                        key={index}
-                                                        className="px-4 py-2 hover:bg-blue-50 cursor-pointer text-sm"
-                                                        onClick={() => {
-                                                            setSearchTerm(suggestion)
-                                                            setShowSuggestions(false)
-                                                        }}
-                                                    >
-                                                        {suggestion}
-                                                    </div>
-                                                ))}
+                        {/* Search bar skeleton */}
+                        <Card className="border-0 shadow-lg bg-gradient-to-r from-gray-50 to-blue-50">
+                            <CardContent className="p-6">
+                                <div className="space-y-4">
+                                    <div className="relative">
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex-1 relative">
+                                                <Skeleton className="h-12 w-full rounded-lg" />
                                             </div>
-                                        )}
+                                            <Skeleton className="h-8 w-8 rounded-lg" />
+                                            <Skeleton className="h-8 w-8 rounded-lg" />
+                                        </div>
                                     </div>
-                                    <Button
-                                        onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                                        className="h-8 w-8 p-0 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-md flex items-center justify-center"
-                                        title={showAdvancedFilters ? 'Hide Advanced Filters' : 'Show Advanced Filters'}
-                                    >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                                        </svg>
-                                    </Button>
-                                    <Button
-                                        onClick={() => setShowAddProductModal(true)}
-                                        className="h-8 w-8 p-0 bg-green-600 hover:bg-green-700 text-white rounded-lg shadow-md flex items-center justify-center"
-                                        title="Add Product"
-                                    >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                        </svg>
-                                    </Button>
-                                    {activeFiltersCount > 0 && (
-                                        <Button
-                                            onClick={clearAllFilters}
-                                            variant="outline"
-                                            className="h-12 px-6 border-red-300 text-red-600 hover:bg-red-50"
-                                        >
-                                            Clear All
-                                        </Button>
-                                    )}
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <Skeleton className="h-8 w-32 rounded" />
+                                        <Skeleton className="h-8 w-28 rounded" />
+                                        <Skeleton className="h-8 w-20 rounded" />
+                                        <Skeleton className="h-8 w-24 rounded" />
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* Results summary skeleton */}
+                        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                            <div className="flex justify-between items-center">
+                                <Skeleton className="h-4 w-48" />
+                                <Skeleton className="h-4 w-32" />
+                            </div>
+                        </div>
+
+                        {/* Products table skeleton */}
+                        <Card className="border-0 shadow-lg">
+                            <CardContent className="p-0">
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-sm">
+                                        <thead>
+                                            <tr className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white">
+                                                <th className="px-2 py-1.5 text-left font-semibold text-xs w-8"></th>
+                                                <th className="px-2 py-1.5 text-left font-semibold text-xs">#</th>
+                                                <th className="px-2 py-1.5 text-left font-semibold text-xs">Product</th>
+                                                <th className="px-2 py-1.5 text-left font-semibold text-xs">Category</th>
+                                                <th className="px-2 py-1.5 text-left font-semibold text-xs">Brand</th>
+                                                <th className="px-2 py-1.5 text-left font-semibold text-xs">SKU</th>
+                                                <th className="px-2 py-1.5 text-left font-semibold text-xs">Price</th>
+                                                <th className="px-2 py-1.5 text-left font-semibold text-xs">Stock</th>
+                                                <th className="px-2 py-1.5 text-left font-semibold text-xs">Status</th>
+                                                <th className="px-2 py-1.5 text-left font-semibold text-xs">Active</th>
+                                                <th className="px-2 py-1.5 text-left font-semibold text-xs">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {Array.from({ length: 10 }).map((_, index) => (
+                                                <tr key={index} className={`border-b ${index % 2 === 1 ? 'bg-gray-50' : 'bg-white'}`}>
+                                                    <td className="px-2 py-1">
+                                                        <Skeleton className="h-4 w-4" />
+                                                    </td>
+                                                    <td className="px-2 py-1">
+                                                        <Skeleton className="h-4 w-6" />
+                                                    </td>
+                                                    <td className="px-2 py-1">
+                                                        <div className="space-y-1">
+                                                            <Skeleton className="h-4 w-32" />
+                                                            <Skeleton className="h-3 w-24" />
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-2 py-1">
+                                                        <Skeleton className="h-5 w-16 rounded-full" />
+                                                    </td>
+                                                    <td className="px-2 py-1">
+                                                        <Skeleton className="h-4 w-20" />
+                                                    </td>
+                                                    <td className="px-2 py-1">
+                                                        <Skeleton className="h-4 w-16" />
+                                                    </td>
+                                                    <td className="px-2 py-1">
+                                                        <div className="space-y-1">
+                                                            <Skeleton className="h-4 w-12" />
+                                                            <Skeleton className="h-3 w-10" />
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-2 py-1">
+                                                        <Skeleton className="h-4 w-12 mx-auto" />
+                                                    </td>
+                                                    <td className="px-2 py-1">
+                                                        <div className="space-y-1">
+                                                            <Skeleton className="h-3 w-16" />
+                                                            <Skeleton className="h-3 w-12" />
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-2 py-1">
+                                                        <Skeleton className="h-6 w-16 mx-auto rounded-full" />
+                                                    </td>
+                                                    <td className="px-2 py-1">
+                                                        <div className="flex items-center gap-1">
+                                                            <Skeleton className="h-5 w-5 rounded" />
+                                                            <Skeleton className="h-5 w-5 rounded" />
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* Pagination skeleton */}
+                        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                            <div className="flex justify-between items-center">
+                                <Skeleton className="h-4 w-32" />
+                                <div className="flex items-center gap-2">
+                                    <Skeleton className="h-8 w-8 rounded" />
+                                    <Skeleton className="h-8 w-8 rounded" />
+                                    <Skeleton className="h-8 w-8 rounded" />
+                                    <Skeleton className="h-8 w-8 rounded" />
+                                    <Skeleton className="h-8 w-8 rounded" />
                                 </div>
                             </div>
-
-                            {/* Quick Filters */}
-                            <div className="flex flex-wrap items-center gap-2">
-                                <select
-                                    className="h-8 px-2 border border-gray-300 rounded text-xs focus:border-blue-500"
-                                    value={categoryFilter}
-                                    onChange={(e) => setCategoryFilter(e.target.value)}
-                                >
-                                    <option value="">All Categories</option>
-                                    {categories.map(category => (
-                                        <option key={category} value={category}>{category}</option>
-                                    ))}
-                                </select>
-                                <select
-                                    className="h-8 px-2 border border-gray-300 rounded text-xs focus:border-blue-500"
-                                    value={brandFilter}
-                                    onChange={(e) => setBrandFilter(e.target.value)}
-                                >
-                                    <option value="">All Brands</option>
-                                    {brands.map(brand => (
-                                        <option key={brand} value={brand}>{brand}</option>
-                                    ))}
-                                </select>
-                                <Input
-                                    className="h-8 w-24 text-xs"
-                                    placeholder="Size"
-                                    value={sizeFilter}
-                                    onChange={(e) => setSizeFilter(e.target.value)}
-                                />
-                                <label className="flex items-center gap-1 px-2 py-1 bg-orange-100 rounded text-xs">
-                                    <input
-                                        type="checkbox"
-                                        checked={lowStockOnly}
-                                        onChange={(e) => setLowStockOnly(e.target.checked)}
-                                        className="text-orange-600"
-                                    />
-                                    <span className="font-medium text-orange-800">Low Stock</span>
-                                </label>
+                        </div>
+                    </>
+                ) : (
+                    <>
+                        {/* Title bar with stats */}
+                        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white text-sm font-semibold px-4 py-3 rounded-lg shadow-lg flex justify-between items-center">
+                            <span>{'<<'} Inventory Management</span>
+                            <div className="flex items-center gap-4 text-xs">
+                                <span>Total Products: {sampleProducts.length}</span>
+                                <span>Active Filters: {activeFiltersCount}</span>
                             </div>
+                        </div>
 
-                            {/* Advanced Filters Panel */}
-                            {showAdvancedFilters && (
-                                <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
-                                    <h3 className="text-base font-semibold mb-3 text-gray-800">Advanced Filters</h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        <div>
-                                            <label className="block text-xs font-medium text-gray-700 mb-1">Price Range</label>
-                                            <div className="flex gap-2">
+                        {/* Advanced Search Bar */}
+                        <Card className="border-0 shadow-lg bg-gradient-to-r from-gray-50 to-blue-50">
+                            <CardContent className="p-6">
+                                <div className="space-y-4">
+                                    {/* Main Search */}
+                                    <div className="relative">
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex-1 relative">
                                                 <Input
-                                                    className="h-8 text-xs"
-                                                    placeholder="Min ₹"
-                                                    type="number"
-                                                    value={priceRange.min}
-                                                    onChange={(e) => setPriceRange(prev => ({ ...prev, min: e.target.value }))}
+                                                    className="h-12 pl-12 pr-4 text-base border-2 border-blue-200 focus:border-blue-500 rounded-lg shadow-sm"
+                                                    placeholder="Search products by name, SKU, barcode, or description..."
+                                                    value={searchTerm}
+                                                    onChange={(e) => setSearchTerm(e.target.value)}
                                                 />
-                                                <Input
-                                                    className="h-8 text-xs"
-                                                    placeholder="Max ₹"
-                                                    type="number"
-                                                    value={priceRange.max}
-                                                    onChange={(e) => setPriceRange(prev => ({ ...prev, max: e.target.value }))}
-                                                />
+                                                <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500">
+                                                    🔍
+                                                </div>
+                                                {showSuggestions && searchSuggestions.length > 0 && (
+                                                    <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg z-10 mt-1">
+                                                        {searchSuggestions.map((suggestion, index) => (
+                                                            <div
+                                                                key={index}
+                                                                className="px-4 py-2 hover:bg-blue-50 cursor-pointer text-sm"
+                                                                onClick={() => {
+                                                                    setSearchTerm(suggestion)
+                                                                    setShowSuggestions(false)
+                                                                }}
+                                                            >
+                                                                {suggestion}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
                                             </div>
-                                        </div>
-                                        <div>
-                                            <label className="block text-xs font-medium text-gray-700 mb-1">Stock Range</label>
-                                            <div className="flex gap-2">
-                                                <Input
-                                                    className="h-8 text-xs"
-                                                    placeholder="Min Qty"
-                                                    type="number"
-                                                    value={stockRange.min}
-                                                    onChange={(e) => setStockRange(prev => ({ ...prev, min: e.target.value }))}
-                                                />
-                                                <Input
-                                                    className="h-8 text-xs"
-                                                    placeholder="Max Qty"
-                                                    type="number"
-                                                    value={stockRange.max}
-                                                    onChange={(e) => setStockRange(prev => ({ ...prev, max: e.target.value }))}
-                                                />
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <label className="block text-xs font-medium text-gray-700 mb-1">Sort By</label>
-                                            <div className="flex gap-2">
-                                                <select
-                                                    className="h-8 px-2 border border-gray-300 rounded text-xs flex-1"
-                                                    value={sortBy}
-                                                    onChange={(e) => setSortBy(e.target.value)}
-                                                >
-                                                    <option value="name">Name</option>
-                                                    <option value="price">Price</option>
-                                                    <option value="stock">Stock</option>
-                                                    <option value="category">Category</option>
-                                                    <option value="brand">Brand</option>
-                                                </select>
+                                            <Button
+                                                onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                                                className="h-8 w-8 p-0 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-md flex items-center justify-center"
+                                                title={showAdvancedFilters ? 'Hide Advanced Filters' : 'Show Advanced Filters'}
+                                            >
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                                                </svg>
+                                            </Button>
+                                            <Button
+                                                onClick={() => setShowAddProductModal(true)}
+                                                className="h-8 w-8 p-0 bg-green-600 hover:bg-green-700 text-white rounded-lg shadow-md flex items-center justify-center"
+                                                title="Add Product"
+                                            >
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                                </svg>
+                                            </Button>
+                                            {activeFiltersCount > 0 && (
                                                 <Button
-                                                    onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                                                    onClick={clearAllFilters}
                                                     variant="outline"
-                                                    className="h-8 px-2 text-xs"
+                                                    className="h-12 px-6 border-red-300 text-red-600 hover:bg-red-50"
                                                 >
-                                                    {sortOrder === 'asc' ? '↑' : '↓'}
+                                                    Clear All
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Quick Filters */}
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <select
+                                            className="h-8 px-2 border border-gray-300 rounded text-xs focus:border-blue-500"
+                                            value={categoryFilter}
+                                            onChange={(e) => setCategoryFilter(e.target.value)}
+                                        >
+                                            <option value="">All Categories</option>
+                                            {categories.map(category => (
+                                                <option key={category} value={category}>{category}</option>
+                                            ))}
+                                        </select>
+                                        <select
+                                            className="h-8 px-2 border border-gray-300 rounded text-xs focus:border-blue-500"
+                                            value={brandFilter}
+                                            onChange={(e) => setBrandFilter(e.target.value)}
+                                        >
+                                            <option value="">All Brands</option>
+                                            {brands.map(brand => (
+                                                <option key={brand} value={brand}>{brand}</option>
+                                            ))}
+                                        </select>
+                                        <Input
+                                            className="h-8 w-24 text-xs"
+                                            placeholder="Size"
+                                            value={sizeFilter}
+                                            onChange={(e) => setSizeFilter(e.target.value)}
+                                        />
+                                        <label className="flex items-center gap-1 px-2 py-1 bg-orange-100 rounded text-xs">
+                                            <input
+                                                type="checkbox"
+                                                checked={lowStockOnly}
+                                                onChange={(e) => setLowStockOnly(e.target.checked)}
+                                                className="text-orange-600"
+                                            />
+                                            <span className="font-medium text-orange-800">Low Stock</span>
+                                        </label>
+                                    </div>
+
+                                    {/* Advanced Filters Panel */}
+                                    {showAdvancedFilters && (
+                                        <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                                            <h3 className="text-base font-semibold mb-3 text-gray-800">Advanced Filters</h3>
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                <div>
+                                                    <label className="block text-xs font-medium text-gray-700 mb-1">Price Range</label>
+                                                    <div className="flex gap-2">
+                                                        <Input
+                                                            className="h-8 text-xs"
+                                                            placeholder="Min ₹"
+                                                            type="number"
+                                                            value={priceRange.min}
+                                                            onChange={(e) => setPriceRange(prev => ({ ...prev, min: e.target.value }))}
+                                                        />
+                                                        <Input
+                                                            className="h-8 text-xs"
+                                                            placeholder="Max ₹"
+                                                            type="number"
+                                                            value={priceRange.max}
+                                                            onChange={(e) => setPriceRange(prev => ({ ...prev, max: e.target.value }))}
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <label className="block text-xs font-medium text-gray-700 mb-1">Stock Range</label>
+                                                    <div className="flex gap-2">
+                                                        <Input
+                                                            className="h-8 text-xs"
+                                                            placeholder="Min Qty"
+                                                            type="number"
+                                                            value={stockRange.min}
+                                                            onChange={(e) => setStockRange(prev => ({ ...prev, min: e.target.value }))}
+                                                        />
+                                                        <Input
+                                                            className="h-8 text-xs"
+                                                            placeholder="Max Qty"
+                                                            type="number"
+                                                            value={stockRange.max}
+                                                            onChange={(e) => setStockRange(prev => ({ ...prev, max: e.target.value }))}
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <label className="block text-xs font-medium text-gray-700 mb-1">Sort By</label>
+                                                    <div className="flex gap-2">
+                                                        <select
+                                                            className="h-8 px-2 border border-gray-300 rounded text-xs flex-1"
+                                                            value={sortBy}
+                                                            onChange={(e) => setSortBy(e.target.value)}
+                                                        >
+                                                            <option value="name">Name</option>
+                                                            <option value="price">Price</option>
+                                                            <option value="stock">Stock</option>
+                                                            <option value="category">Category</option>
+                                                            <option value="brand">Brand</option>
+                                                        </select>
+                                                        <Button
+                                                            onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                                                            variant="outline"
+                                                            className="h-8 px-2 text-xs"
+                                                        >
+                                                            {sortOrder === 'asc' ? '↑' : '↓'}
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* Results Summary */}
+                        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                            <div className="flex justify-between items-center">
+                                <div className="text-sm text-gray-600">
+                                    Showing {startIndex + 1} to {Math.min(endIndex, filteredProducts.length)} of {filteredProducts.length} products
+                                </div>
+                                <div className="flex items-center gap-4 text-sm">
+                                    <span className="text-green-600 font-medium">
+                                        Total Value: ₹{filteredProducts.reduce((sum, p) => sum + (p.stock * p.costPrice), 0).toLocaleString()}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Results table */}
+                        <Card className="border-0 shadow-lg">
+                            <CardContent className="p-0">
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-sm">
+                                        <thead>
+                                            <tr className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white">
+                                                <th className="px-2 py-1.5 text-left font-semibold text-xs w-8"></th>
+                                                <th className="px-2 py-1.5 text-left font-semibold text-xs">#</th>
+                                                <th className="px-2 py-1.5 text-left font-semibold text-xs">Product</th>
+                                                <th className="px-2 py-1.5 text-left font-semibold text-xs">Category</th>
+                                                <th className="px-2 py-1.5 text-left font-semibold text-xs">Brand</th>
+                                                <th className="px-2 py-1.5 text-left font-semibold text-xs">SKU</th>
+                                                <th className="px-2 py-1.5 text-left font-semibold text-xs">Price</th>
+                                                <th className="px-2 py-1.5 text-left font-semibold text-xs">Stock</th>
+                                                <th className="px-2 py-1.5 text-left font-semibold text-xs">Status</th>
+                                                <th className="px-2 py-1.5 text-left font-semibold text-xs">Active</th>
+                                                <th className="px-2 py-1.5 text-left font-semibold text-xs">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {currentProducts.map((product, index) => {
+                                                const stockStatus = getStockStatus(product)
+                                                const ageing = getAgeing(product)
+                                                const gstPercentage = getGSTPercentage(product)
+                                                const isExpanded = expandedRows.has(product.id)
+
+                                                return (
+                                                    <>
+                                                        <tr
+                                                            key={product.id}
+                                                            className={`border-b hover:bg-gray-50 transition-colors cursor-pointer ${index % 2 === 1 ? 'bg-gray-50' : 'bg-white'}`}
+                                                            onClick={() => toggleRowExpansion(product.id)}
+                                                        >
+                                                            <td className="px-2 py-1">
+                                                                <div className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}>
+                                                                    ▶
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-2 py-1 text-gray-600 text-xs">{startIndex + index + 1}</td>
+                                                            <td className="px-2 py-1">
+                                                                <div className="space-y-0.5">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <span className="font-semibold text-gray-900 text-xs">{product.name}</span>
+                                                                        {product.sizes.length > 1 && (
+                                                                            <span className="inline-block bg-blue-100 text-blue-800 text-xs px-1 py-0.5 rounded-full">
+                                                                                {product.sizes.length} sizes
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                    <div className="text-xs text-gray-500">{product.description.substring(0, 35)}...</div>
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-2 py-1">
+                                                                <span className="inline-block bg-gray-100 text-gray-800 text-xs px-1.5 py-0.5 rounded-full">
+                                                                    {product.category}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-2 py-1 text-gray-700 text-xs">{product.brand || '-'}</td>
+                                                            <td className="px-2 py-1 font-mono text-xs">{product.sku}</td>
+                                                            <td className="px-2 py-1">
+                                                                <div className="text-right space-y-0.5">
+                                                                    <div className="font-semibold text-green-600 text-xs">₹{product.price}</div>
+                                                                    <div className="text-xs text-gray-500 line-through">₹{product.mrp}</div>
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-2 py-1">
+                                                                <div className={`text-center font-semibold text-xs ${stockStatus.className}`}>
+                                                                    {stockStatus.text}
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-2 py-1">
+                                                                <div className="flex flex-col gap-0.5">
+                                                                    <span className="text-xs text-gray-600">{ageing}</span>
+                                                                    <span className="text-xs text-gray-600">{gstPercentage}% GST</span>
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-2 py-1">
+                                                                <div className="flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+                                                                    <button
+                                                                        onClick={() => handleToggleActive(product)}
+                                                                        className={`px-2 py-1 rounded-full text-xs font-medium transition-colors ${product.isActive
+                                                                            ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                                                                            : 'bg-red-100 text-red-800 hover:bg-red-200'
+                                                                            }`}
+                                                                        title={product.isActive ? 'Click to deactivate' : 'Click to activate'}
+                                                                    >
+                                                                        {product.isActive ? 'Active' : 'Inactive'}
+                                                                    </button>
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-2 py-1">
+                                                                <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                                                                    <ActionGate tile="garment" page="inventory" action="update" fallback={null}>
+                                                                        <Button
+                                                                            variant="outline"
+                                                                            className="h-5 w-5 p-0 text-blue-600 hover:bg-blue-50 text-xs"
+                                                                            title="Edit"
+                                                                            onClick={() => handleEditProduct(product)}
+                                                                        >
+                                                                            ✎
+                                                                        </Button>
+                                                                    </ActionGate>
+                                                                    <ActionGate tile="garment" page="inventory" action="delete" fallback={null}>
+                                                                        <Button
+                                                                            variant="outline"
+                                                                            className="h-5 w-5 p-0 text-red-600 hover:bg-red-50 text-xs"
+                                                                            title="Delete"
+                                                                            onClick={() => handleDeleteProduct(product)}
+                                                                        >
+                                                                            🗑
+                                                                        </Button>
+                                                                    </ActionGate>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                        {isExpanded && (
+                                                            <tr>
+                                                                <td colSpan={11} className="p-0">
+                                                                    <ProductDetails product={product} />
+                                                                </td>
+                                                            </tr>
+                                                        )}
+                                                    </>
+                                                )
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                {/* Pagination */}
+                                {totalPages > 1 && (
+                                    <div className="bg-gray-50 px-6 py-4 border-t">
+                                        <div className="flex items-center justify-between">
+                                            <div className="text-sm text-gray-600">
+                                                Page {currentPage} of {totalPages}
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <Button
+                                                    variant="outline"
+                                                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                                                    disabled={currentPage === 1}
+                                                    className="h-8 px-3"
+                                                >
+                                                    ← Previous
+                                                </Button>
+
+                                                {/* Page numbers */}
+                                                <div className="flex items-center gap-1">
+                                                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                                                        let pageNum
+                                                        if (totalPages <= 5) {
+                                                            pageNum = i + 1
+                                                        } else if (currentPage <= 3) {
+                                                            pageNum = i + 1
+                                                        } else if (currentPage >= totalPages - 2) {
+                                                            pageNum = totalPages - 4 + i
+                                                        } else {
+                                                            pageNum = currentPage - 2 + i
+                                                        }
+
+                                                        return (
+                                                            <Button
+                                                                key={pageNum}
+                                                                variant={currentPage === pageNum ? "default" : "outline"}
+                                                                onClick={() => setCurrentPage(pageNum)}
+                                                                className="h-8 w-8 p-0"
+                                                            >
+                                                                {pageNum}
+                                                            </Button>
+                                                        )
+                                                    })}
+                                                </div>
+
+                                                <Button
+                                                    variant="outline"
+                                                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                                                    disabled={currentPage === totalPages}
+                                                    className="h-8 px-3"
+                                                >
+                                                    Next →
                                                 </Button>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            )}
-                        </div>
-                    </CardContent>
-                </Card>
+                                )}
+                            </CardContent>
+                        </Card>
 
-                {/* Results Summary */}
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                    <div className="flex justify-between items-center">
-                        <div className="text-sm text-gray-600">
-                            Showing {startIndex + 1} to {Math.min(endIndex, filteredProducts.length)} of {filteredProducts.length} products
-                        </div>
-                        <div className="flex items-center gap-4 text-sm">
-                            <span className="text-green-600 font-medium">
-                                Total Value: ₹{filteredProducts.reduce((sum, p) => sum + (p.stock * p.costPrice), 0).toLocaleString()}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Results table */}
-                <Card className="border-0 shadow-lg">
-                    <CardContent className="p-0">
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-sm">
-                                <thead>
-                                    <tr className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white">
-                                        <th className="px-2 py-1.5 text-left font-semibold text-xs w-8"></th>
-                                        <th className="px-2 py-1.5 text-left font-semibold text-xs">#</th>
-                                        <th className="px-2 py-1.5 text-left font-semibold text-xs">Product</th>
-                                        <th className="px-2 py-1.5 text-left font-semibold text-xs">Category</th>
-                                        <th className="px-2 py-1.5 text-left font-semibold text-xs">Brand</th>
-                                        <th className="px-2 py-1.5 text-left font-semibold text-xs">SKU</th>
-                                        <th className="px-2 py-1.5 text-left font-semibold text-xs">Price</th>
-                                        <th className="px-2 py-1.5 text-left font-semibold text-xs">Stock</th>
-                                        <th className="px-2 py-1.5 text-left font-semibold text-xs">Status</th>
-                                        <th className="px-2 py-1.5 text-left font-semibold text-xs">Active</th>
-                                        <th className="px-2 py-1.5 text-left font-semibold text-xs">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {currentProducts.map((product, index) => {
-                                        const stockStatus = getStockStatus(product)
-                                        const ageing = getAgeing(product)
-                                        const gstPercentage = getGSTPercentage(product)
-                                        const isExpanded = expandedRows.has(product.id)
-
-                                        return (
-                                            <>
-                                                <tr
-                                                    key={product.id}
-                                                    className={`border-b hover:bg-gray-50 transition-colors cursor-pointer ${index % 2 === 1 ? 'bg-gray-50' : 'bg-white'}`}
-                                                    onClick={() => toggleRowExpansion(product.id)}
-                                                >
-                                                    <td className="px-2 py-1">
-                                                        <div className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}>
-                                                            ▶
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-2 py-1 text-gray-600 text-xs">{startIndex + index + 1}</td>
-                                                    <td className="px-2 py-1">
-                                                        <div className="space-y-0.5">
-                                                            <div className="flex items-center gap-2">
-                                                                <span className="font-semibold text-gray-900 text-xs">{product.name}</span>
-                                                                {product.sizes.length > 1 && (
-                                                                    <span className="inline-block bg-blue-100 text-blue-800 text-xs px-1 py-0.5 rounded-full">
-                                                                        {product.sizes.length} sizes
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                            <div className="text-xs text-gray-500">{product.description.substring(0, 35)}...</div>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-2 py-1">
-                                                        <span className="inline-block bg-gray-100 text-gray-800 text-xs px-1.5 py-0.5 rounded-full">
-                                                            {product.category}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-2 py-1 text-gray-700 text-xs">{product.brand || '-'}</td>
-                                                    <td className="px-2 py-1 font-mono text-xs">{product.sku}</td>
-                                                    <td className="px-2 py-1">
-                                                        <div className="text-right space-y-0.5">
-                                                            <div className="font-semibold text-green-600 text-xs">₹{product.price}</div>
-                                                            <div className="text-xs text-gray-500 line-through">₹{product.mrp}</div>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-2 py-1">
-                                                        <div className={`text-center font-semibold text-xs ${stockStatus.className}`}>
-                                                            {stockStatus.text}
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-2 py-1">
-                                                        <div className="flex flex-col gap-0.5">
-                                                            <span className="text-xs text-gray-600">{ageing}</span>
-                                                            <span className="text-xs text-gray-600">{gstPercentage}% GST</span>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-2 py-1">
-                                                        <div className="flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
-                                                            <button
-                                                                onClick={() => handleToggleActive(product)}
-                                                                className={`px-2 py-1 rounded-full text-xs font-medium transition-colors ${product.isActive
-                                                                    ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                                                                    : 'bg-red-100 text-red-800 hover:bg-red-200'
-                                                                    }`}
-                                                                title={product.isActive ? 'Click to deactivate' : 'Click to activate'}
-                                                            >
-                                                                {product.isActive ? 'Active' : 'Inactive'}
-                                                            </button>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-2 py-1">
-                                                        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                                                            <ActionGate tile="garment" page="inventory" action="update" fallback={null}>
-                                                                <Button
-                                                                    variant="outline"
-                                                                    className="h-5 w-5 p-0 text-blue-600 hover:bg-blue-50 text-xs"
-                                                                    title="Edit"
-                                                                    onClick={() => handleEditProduct(product)}
-                                                                >
-                                                                    ✎
-                                                                </Button>
-                                                            </ActionGate>
-                                                            <ActionGate tile="garment" page="inventory" action="delete" fallback={null}>
-                                                                <Button
-                                                                    variant="outline"
-                                                                    className="h-5 w-5 p-0 text-red-600 hover:bg-red-50 text-xs"
-                                                                    title="Delete"
-                                                                    onClick={() => handleDeleteProduct(product)}
-                                                                >
-                                                                    🗑
-                                                                </Button>
-                                                            </ActionGate>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                                {isExpanded && (
-                                                    <tr>
-                                                        <td colSpan={11} className="p-0">
-                                                            <ProductDetails product={product} />
-                                                        </td>
-                                                    </tr>
-                                                )}
-                                            </>
-                                        )
-                                    })}
-                                </tbody>
-                            </table>
-                        </div>
-
-                        {/* Pagination */}
-                        {totalPages > 1 && (
-                            <div className="bg-gray-50 px-6 py-4 border-t">
-                                <div className="flex items-center justify-between">
-                                    <div className="text-sm text-gray-600">
-                                        Page {currentPage} of {totalPages}
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <Button
-                                            variant="outline"
-                                            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                                            disabled={currentPage === 1}
-                                            className="h-8 px-3"
-                                        >
-                                            ← Previous
-                                        </Button>
-
-                                        {/* Page numbers */}
-                                        <div className="flex items-center gap-1">
-                                            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                                                let pageNum
-                                                if (totalPages <= 5) {
-                                                    pageNum = i + 1
-                                                } else if (currentPage <= 3) {
-                                                    pageNum = i + 1
-                                                } else if (currentPage >= totalPages - 2) {
-                                                    pageNum = totalPages - 4 + i
-                                                } else {
-                                                    pageNum = currentPage - 2 + i
-                                                }
-
-                                                return (
-                                                    <Button
-                                                        key={pageNum}
-                                                        variant={currentPage === pageNum ? "default" : "outline"}
-                                                        onClick={() => setCurrentPage(pageNum)}
-                                                        className="h-8 w-8 p-0"
-                                                    >
-                                                        {pageNum}
-                                                    </Button>
-                                                )
-                                            })}
-                                        </div>
-
-                                        <Button
-                                            variant="outline"
-                                            onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                                            disabled={currentPage === totalPages}
-                                            className="h-8 px-3"
-                                        >
-                                            Next →
-                                        </Button>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
+                    </>
+                )}
             </div>
-
             {/* Edit Product Modal */}
             {showEditModal && selectedProduct && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">

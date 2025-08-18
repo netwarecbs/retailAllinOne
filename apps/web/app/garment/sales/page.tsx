@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { Button, Card, CardContent, Input } from '@retail/ui'
+import { Button, Card, CardContent, Input, Skeleton } from '@retail/ui'
 import { ActionGate } from '../../../components/RBAC'
 import { RootState, AppDispatch, setExtraLess, setSavings, updatePaymentAmount, holdInvoice, loadHeldInvoice, removeHeldInvoice, setInvoiceNumber, createSale } from '@retail/shared'
 import ProductSelector from '../../../components/ProductSelector'
@@ -46,6 +46,18 @@ export default function GarmentSalesPage() {
     const [showInvoicePreview, setShowInvoicePreview] = useState(false)
     const [showConfirmModal, setShowConfirmModal] = useState(false)
     const [invoiceToDelete, setInvoiceToDelete] = useState<string | null>(null)
+
+    // Loading state for the main sales page
+    const [isLoading, setIsLoading] = useState(true)
+
+    // Simulate loading on component mount
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setIsLoading(false)
+        }, 1500) // Simulate 1.5 seconds loading time
+
+        return () => clearTimeout(timer)
+    }, [])
 
     // Initialize invoice number on component mount
     useEffect(() => {
@@ -267,293 +279,473 @@ export default function GarmentSalesPage() {
     return (
         <main className="max-w-7xl mx-auto py-4 sm:px-6 lg:px-8">
             <div className="px-4 sm:px-0 space-y-4">
-                {/* Title bar - compact */}
-                <div className="bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-1 rounded shadow-sm">{'<<'} SALES</div>
+                {/* Loading State */}
+                {isLoading ? (
+                    <>
+                        {/* Title bar skeleton */}
+                        <div className="bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-1 rounded shadow-sm">
+                            <Skeleton className="h-4 w-16" />
+                        </div>
 
-                {/* Header form */}
-                <Card className="border-0 shadow-sm">
-                    <CardContent className="p-4">
-                        <div className="grid grid-cols-1 md:grid-cols-12 gap-3 text-xs">
-                            {/* Left column */}
-                            <div className="md:col-span-6 grid grid-cols-12 gap-3">
-                                <div className="col-span-4">
-                                    <label className="block text-gray-600 mb-1">Type</label>
-                                    <select className="w-full border rounded px-2 py-1">
-                                        <option>Sales</option>
-                                    </select>
-                                </div>
-                                <div className="col-span-8">
-                                    <label className="block text-gray-600 mb-1">Invoice No.</label>
-                                    <Input
-                                        className="h-8"
-                                        value={currentInvoiceNumber}
-                                        onChange={(e) => dispatch(setInvoiceNumber(e.target.value))}
-                                    />
-                                </div>
+                        {/* Header form skeleton */}
+                        <Card className="border-0 shadow-sm">
+                            <CardContent className="p-4">
+                                <div className="grid grid-cols-1 md:grid-cols-12 gap-3 text-xs">
+                                    {/* Left column skeleton */}
+                                    <div className="md:col-span-6 grid grid-cols-12 gap-3">
+                                        <div className="col-span-4">
+                                            <Skeleton className="h-3 w-12 mb-1" />
+                                            <Skeleton className="h-8 w-full rounded" />
+                                        </div>
+                                        <div className="col-span-8">
+                                            <Skeleton className="h-3 w-16 mb-1" />
+                                            <Skeleton className="h-8 w-full rounded" />
+                                        </div>
+                                        <div className="col-span-4">
+                                            <Skeleton className="h-3 w-20 mb-1" />
+                                            <Skeleton className="h-8 w-full rounded" />
+                                        </div>
+                                        <div className="col-span-4">
+                                            <Skeleton className="h-3 w-12 mb-1" />
+                                            <Skeleton className="h-8 w-full rounded" />
+                                        </div>
+                                        <div className="col-span-4">
+                                            <Skeleton className="h-3 w-12 mb-1" />
+                                            <Skeleton className="h-8 w-full rounded" />
+                                        </div>
+                                    </div>
 
-                                <div className="col-span-4">
-                                    <label className="block text-gray-600 mb-1">Invoice Date</label>
-                                    <Input
-                                        type="date"
-                                        className="h-8"
-                                        value={invoiceDate}
-                                        onChange={(e) => setInvoiceDate(e.target.value)}
-                                    />
+                                    {/* Right column skeleton */}
+                                    <div className="md:col-span-6 grid grid-cols-12 gap-3">
+                                        <div className="col-span-12 grid grid-cols-3 gap-2">
+                                            <div className="bg-gray-100 border rounded p-2 text-[10px]">
+                                                <Skeleton className="h-3 w-8 mb-1" />
+                                                <Skeleton className="h-4 w-6" />
+                                            </div>
+                                            <div className="bg-gray-100 border rounded p-2 text-[10px]">
+                                                <Skeleton className="h-3 w-16 mb-1" />
+                                                <Skeleton className="h-4 w-8" />
+                                            </div>
+                                            <div className="bg-gray-100 border rounded p-2 text-[10px]">
+                                                <Skeleton className="h-3 w-10 mb-1" />
+                                                <Skeleton className="h-4 w-12" />
+                                            </div>
+                                        </div>
+                                        <div className="col-span-6">
+                                            <Skeleton className="h-3 w-10 mb-1" />
+                                            <Skeleton className="h-8 w-full rounded" />
+                                        </div>
+                                        <div className="col-span-12">
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <Skeleton className="h-4 w-4 rounded" />
+                                                <Skeleton className="h-4 w-16" />
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="col-span-4">
-                                    <label className="block text-gray-600 mb-1">Notes</label>
-                                    <Input
-                                        className="h-8"
-                                        value={notes}
-                                        onChange={(e) => setNotes(e.target.value)}
-                                        placeholder="Optional notes"
-                                    />
+                            </CardContent>
+                        </Card>
+
+                        {/* Customer Selection skeleton */}
+                        <Card className="border-0 shadow-sm">
+                            <CardContent className="p-4">
+                                <Skeleton className="h-4 w-24 mb-3" />
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                    <Skeleton className="h-8 w-full rounded" />
+                                    <Skeleton className="h-8 w-full rounded" />
+                                    <Skeleton className="h-8 w-full rounded" />
                                 </div>
-                                <div className="col-span-4">
-                                    <label className="block text-gray-600 mb-1">Status</label>
-                                    <select className="w-full border rounded px-2 py-1">
-                                        <option>Draft</option>
-                                        <option>Completed</option>
-                                    </select>
+                            </CardContent>
+                        </Card>
+
+                        {/* Product Selection skeleton */}
+                        <Card className="border-0 shadow-sm">
+                            <CardContent className="p-4">
+                                <Skeleton className="h-4 w-32 mb-3" />
+                                <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                                    <Skeleton className="h-8 w-full rounded" />
+                                    <Skeleton className="h-8 w-full rounded" />
+                                    <Skeleton className="h-8 w-full rounded" />
+                                    <Skeleton className="h-8 w-full rounded" />
                                 </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* Cart and Payment skeleton */}
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            {/* Cart skeleton */}
+                            <div className="md:col-span-3">
+                                <Card className="border-0 shadow-sm">
+                                    <CardContent className="p-4">
+                                        <Skeleton className="h-5 w-20 mb-4" />
+                                        <div className="space-y-3">
+                                            {Array.from({ length: 3 }).map((_, index) => (
+                                                <div key={index} className="flex items-center gap-3 p-2 border rounded">
+                                                    <Skeleton className="h-12 w-12 rounded" />
+                                                    <div className="flex-1 space-y-2">
+                                                        <Skeleton className="h-4 w-32" />
+                                                        <Skeleton className="h-3 w-24" />
+                                                    </div>
+                                                    <div className="text-right space-y-2">
+                                                        <Skeleton className="h-4 w-16" />
+                                                        <Skeleton className="h-3 w-12" />
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </CardContent>
+                                </Card>
                             </div>
 
-                            {/* Right column */}
-                            <div className="md:col-span-6 grid grid-cols-12 gap-3">
-                                <div className="col-span-12 grid grid-cols-3 gap-2">
-                                    <div className="bg-gray-100 border rounded p-2 text-[10px]">
-                                        <div className="text-gray-500">Items</div>
-                                        <div className="text-gray-700 font-medium">{cart.length}</div>
+                            {/* Payment Sidebar skeleton */}
+                            <Card className="border-0 shadow-sm md:col-span-1">
+                                <CardContent className="p-3 space-y-3 text-xs">
+                                    <div className="flex items-center justify-between">
+                                        <Skeleton className="h-3 w-24" />
+                                        <Skeleton className="h-6 w-20 rounded" />
                                     </div>
-                                    <div className="bg-gray-100 border rounded p-2 text-[10px]">
-                                        <div className="text-gray-500">Total Qty</div>
-                                        <div className="text-gray-700 font-medium">{cart.reduce((sum, item) => sum + item.quantity, 0)}</div>
-                                    </div>
-                                    <div className="bg-gray-100 border rounded p-2 text-[10px]">
-                                        <div className="text-gray-500">Total</div>
-                                        <div className="text-gray-700 font-medium">₹{invoiceTotal.toFixed(2)}</div>
-                                    </div>
-                                </div>
 
-                                <div className="col-span-6">
-                                    <label className="block text-gray-600 mb-1">State</label>
-                                    <select className="w-full border rounded px-2 py-1">
-                                        <option>West Bengal (19)</option>
-                                    </select>
-                                </div>
-                                <div className="col-span-12">
-                                    <label className="inline-flex items-center gap-2 mt-1">
-                                        <input
-                                            type="checkbox"
-                                            checked={customer?.isWholesale || false}
-                                            readOnly
-                                        />
-                                        Wholesale
-                                    </label>
-                                </div>
+                                    <div className="space-y-2">
+                                        <div className="flex items-center justify-between">
+                                            <Skeleton className="h-3 w-16" />
+                                            <Skeleton className="h-3 w-12" />
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <Skeleton className="h-3 w-16" />
+                                            <Skeleton className="h-3 w-12" />
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <Skeleton className="h-3 w-16" />
+                                            <Skeleton className="h-3 w-12" />
+                                        </div>
+                                        <div className="flex items-center justify-between border-t pt-2">
+                                            <Skeleton className="h-3 w-20" />
+                                            <Skeleton className="h-5 w-16" />
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-2 items-center pt-2">
+                                            <Skeleton className="h-3 w-20" />
+                                            <Skeleton className="h-7 w-full rounded" />
+                                            <Skeleton className="h-3 w-20" />
+                                            <Skeleton className="h-7 w-full rounded" />
+                                            <Skeleton className="h-3 w-20" />
+                                            <Skeleton className="h-7 w-full rounded" />
+                                            <Skeleton className="h-3 w-20" />
+                                            <Skeleton className="h-7 w-full rounded" />
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+
+                        {/* Bottom payment summary skeleton */}
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-center text-xs">
+                            <div className="lg:col-span-7 grid grid-cols-7 gap-2">
+                                {Array.from({ length: 7 }).map((_, index) => (
+                                    <div key={index} className="bg-yellow-100 border border-yellow-300 rounded p-2">
+                                        <Skeleton className="h-3 w-16 mb-1" />
+                                        <Skeleton className="h-7 w-full rounded" />
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="lg:col-span-5 flex flex-wrap items-center justify-end gap-3">
+                                {Array.from({ length: 5 }).map((_, index) => (
+                                    <Skeleton key={index} className="h-8 w-20 rounded" />
+                                ))}
                             </div>
                         </div>
-                    </CardContent>
-                </Card>
+                    </>
+                ) : (
+                    <>
+                        {/* Title bar - compact */}
+                        <div className="bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-1 rounded shadow-sm">{'<<'} SALES</div>
 
-                {/* Customer Selection */}
-                <CustomerSelector
-                    selectedCustomer={customer}
-                    onCustomerSelect={(selectedCustomer) => {
-                        console.log('Customer selected:', selectedCustomer);
-                    }}
-                />
+                        {/* Header form */}
+                        <Card className="border-0 shadow-sm">
+                            <CardContent className="p-4">
+                                <div className="grid grid-cols-1 md:grid-cols-12 gap-3 text-xs">
+                                    {/* Left column */}
+                                    <div className="md:col-span-6 grid grid-cols-12 gap-3">
+                                        <div className="col-span-4">
+                                            <label className="block text-gray-600 mb-1">Type</label>
+                                            <select className="w-full border rounded px-2 py-1">
+                                                <option>Sales</option>
+                                            </select>
+                                        </div>
+                                        <div className="col-span-8">
+                                            <label className="block text-gray-600 mb-1">Invoice No.</label>
+                                            <Input
+                                                className="h-8"
+                                                value={currentInvoiceNumber}
+                                                onChange={(e) => dispatch(setInvoiceNumber(e.target.value))}
+                                            />
+                                        </div>
 
-                {/* Product Selection */}
-                <ProductSelector />
+                                        <div className="col-span-4">
+                                            <label className="block text-gray-600 mb-1">Invoice Date</label>
+                                            <Input
+                                                type="date"
+                                                className="h-8"
+                                                value={invoiceDate}
+                                                onChange={(e) => setInvoiceDate(e.target.value)}
+                                            />
+                                        </div>
+                                        <div className="col-span-4">
+                                            <label className="block text-gray-600 mb-1">Notes</label>
+                                            <Input
+                                                className="h-8"
+                                                value={notes}
+                                                onChange={(e) => setNotes(e.target.value)}
+                                                placeholder="Optional notes"
+                                            />
+                                        </div>
+                                        <div className="col-span-4">
+                                            <label className="block text-gray-600 mb-1">Status</label>
+                                            <select className="w-full border rounded px-2 py-1">
+                                                <option>Draft</option>
+                                                <option>Completed</option>
+                                            </select>
+                                        </div>
+                                    </div>
 
-                {/* Cart and Payment */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    {/* Cart */}
-                    <div className="md:col-span-3">
-                        <Cart />
-                    </div>
+                                    {/* Right column */}
+                                    <div className="md:col-span-6 grid grid-cols-12 gap-3">
+                                        <div className="col-span-12 grid grid-cols-3 gap-2">
+                                            <div className="bg-gray-100 border rounded p-2 text-[10px]">
+                                                <div className="text-gray-500">Items</div>
+                                                <div className="text-gray-700 font-medium">{cart.length}</div>
+                                            </div>
+                                            <div className="bg-gray-100 border rounded p-2 text-[10px]">
+                                                <div className="text-gray-500">Total Qty</div>
+                                                <div className="text-gray-700 font-medium">{cart.reduce((sum, item) => sum + item.quantity, 0)}</div>
+                                            </div>
+                                            <div className="bg-gray-100 border rounded p-2 text-[10px]">
+                                                <div className="text-gray-500">Total</div>
+                                                <div className="text-gray-700 font-medium">₹{invoiceTotal.toFixed(2)}</div>
+                                            </div>
+                                        </div>
 
-                    {/* Payment Sidebar */}
-                    <Card className="border-0 shadow-sm md:col-span-1">
-                        <CardContent className="p-3 space-y-3 text-xs">
-                            <div className="flex items-center justify-between">
-                                <span>Payment Method</span>
-                                <select
-                                    className="border rounded px-2 py-1"
-                                    value={paymentMethod}
-                                    onChange={(e) => setPaymentMethod(e.target.value)}
-                                >
-                                    <option value="cash">Cash</option>
-                                    <option value="card">Card</option>
-                                    <option value="upi">UPI</option>
-                                </select>
+                                        <div className="col-span-6">
+                                            <label className="block text-gray-600 mb-1">State</label>
+                                            <select className="w-full border rounded px-2 py-1">
+                                                <option>West Bengal (19)</option>
+                                            </select>
+                                        </div>
+                                        <div className="col-span-12">
+                                            <label className="inline-flex items-center gap-2 mt-1">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={customer?.isWholesale || false}
+                                                    readOnly
+                                                />
+                                                Wholesale
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* Customer Selection */}
+                        <CustomerSelector
+                            selectedCustomer={customer}
+                            onCustomerSelect={(selectedCustomer) => {
+                                console.log('Customer selected:', selectedCustomer);
+                            }}
+                        />
+
+                        {/* Product Selection */}
+                        <ProductSelector />
+
+                        {/* Cart and Payment */}
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            {/* Cart */}
+                            <div className="md:col-span-3">
+                                <Cart />
                             </div>
 
-                            <div className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                    <span>Subtotal :</span>
-                                    <span className="font-medium text-gray-600">₹{subtotal.toFixed(2)}</span>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <span>Discount :</span>
-                                    <span className="font-medium text-gray-600">₹{discount.toFixed(2)}</span>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <span>GST (5%) :</span>
-                                    <span className="font-medium text-gray-600">₹{tax.toFixed(2)}</span>
-                                </div>
-                                <div className="flex items-center justify-between border-t pt-2">
-                                    <span>Invoice Total :</span>
-                                    <span className="font-bold text-lg">₹{invoiceTotal.toFixed(2)}</span>
-                                </div>
+                            {/* Payment Sidebar */}
+                            <Card className="border-0 shadow-sm md:col-span-1">
+                                <CardContent className="p-3 space-y-3 text-xs">
+                                    <div className="flex items-center justify-between">
+                                        <span>Payment Method</span>
+                                        <select
+                                            className="border rounded px-2 py-1"
+                                            value={paymentMethod}
+                                            onChange={(e) => setPaymentMethod(e.target.value)}
+                                        >
+                                            <option value="cash">Cash</option>
+                                            <option value="card">Card</option>
+                                            <option value="upi">UPI</option>
+                                        </select>
+                                    </div>
 
-                                <div className="grid grid-cols-2 gap-2 items-center pt-2">
-                                    <span>Payment in Cash</span>
+                                    <div className="space-y-2">
+                                        <div className="flex items-center justify-between">
+                                            <span>Subtotal :</span>
+                                            <span className="font-medium text-gray-600">₹{subtotal.toFixed(2)}</span>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <span>Discount :</span>
+                                            <span className="font-medium text-gray-600">₹{discount.toFixed(2)}</span>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <span>GST (5%) :</span>
+                                            <span className="font-medium text-gray-600">₹{tax.toFixed(2)}</span>
+                                        </div>
+                                        <div className="flex items-center justify-between border-t pt-2">
+                                            <span>Invoice Total :</span>
+                                            <span className="font-bold text-lg">₹{invoiceTotal.toFixed(2)}</span>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-2 items-center pt-2">
+                                            <span>Payment in Cash</span>
+                                            <Input
+                                                type="number"
+                                                className="h-7 text-right"
+                                                value={cashInput}
+                                                onChange={(e) => handlePaymentChange('cashAmount', e.target.value)}
+                                                disabled={paymentMethod !== 'cash'}
+                                            />
+                                            <span>Payment in Card</span>
+                                            <Input
+                                                type="number"
+                                                className="h-7 text-right"
+                                                value={cardInput}
+                                                onChange={(e) => handlePaymentChange('cardAmount', e.target.value)}
+                                                disabled={paymentMethod !== 'card'}
+                                            />
+                                            <span>Payment in UPI</span>
+                                            <Input
+                                                type="number"
+                                                className="h-7 text-right"
+                                                value={upiInput}
+                                                onChange={(e) => handlePaymentChange('upiAmount', e.target.value)}
+                                                disabled={paymentMethod !== 'upi'}
+                                            />
+                                            <span>Change Given</span>
+                                            <Input
+                                                type="number"
+                                                className="h-7 text-right bg-gray-100"
+                                                value={changeInput}
+                                                readOnly
+                                            />
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+
+                        {/* Bottom payment summary */}
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-center text-xs">
+                            <div className="lg:col-span-7 grid grid-cols-7 gap-2">
+                                <div className="bg-yellow-100 border border-yellow-300 rounded p-2">
+                                    <div className="text-[10px] text-gray-700">Extra/Less</div>
                                     <Input
-                                        type="number"
+                                        className="h-7 text-right"
+                                        value={extraLessInput}
+                                        onChange={(e) => handleExtraLessChange(e.target.value)}
+                                        placeholder="0.00"
+                                    />
+                                </div>
+                                <div className="bg-yellow-100 border border-yellow-300 rounded p-2">
+                                    <div className="text-[10px] text-gray-700">Savings</div>
+                                    <Input
+                                        className="h-7 text-right"
+                                        value={savingsInput}
+                                        onChange={(e) => handleSavingsChange(e.target.value)}
+                                        placeholder="0.00"
+                                    />
+                                </div>
+                                <div className="bg-yellow-100 border border-yellow-300 rounded p-2">
+                                    <div className="text-[10px] text-gray-700">Invoice Total</div>
+                                    <Input
+                                        className="h-7 text-right font-semibold"
+                                        value={invoiceTotal.toFixed(2)}
+                                        readOnly
+                                    />
+                                </div>
+                                <div className="bg-yellow-100 border border-yellow-300 rounded p-2">
+                                    <div className="text-[10px] text-gray-700">Cash</div>
+                                    <Input
                                         className="h-7 text-right"
                                         value={cashInput}
                                         onChange={(e) => handlePaymentChange('cashAmount', e.target.value)}
-                                        disabled={paymentMethod !== 'cash'}
+                                        placeholder="0.00"
                                     />
-                                    <span>Payment in Card</span>
+                                </div>
+                                <div className="bg-yellow-100 border border-yellow-300 rounded p-2">
+                                    <div className="text-[10px] text-gray-700">Card</div>
                                     <Input
-                                        type="number"
                                         className="h-7 text-right"
                                         value={cardInput}
                                         onChange={(e) => handlePaymentChange('cardAmount', e.target.value)}
-                                        disabled={paymentMethod !== 'card'}
+                                        placeholder="0.00"
                                     />
-                                    <span>Payment in UPI</span>
+                                </div>
+                                <div className="bg-yellow-100 border border-yellow-300 rounded p-2">
+                                    <div className="text-[10px] text-gray-700">UPI</div>
                                     <Input
-                                        type="number"
                                         className="h-7 text-right"
                                         value={upiInput}
                                         onChange={(e) => handlePaymentChange('upiAmount', e.target.value)}
-                                        disabled={paymentMethod !== 'upi'}
+                                        placeholder="0.00"
                                     />
-                                    <span>Change Given</span>
+                                </div>
+                                <div className="bg-yellow-100 border border-yellow-300 rounded p-2">
+                                    <div className="text-[10px] text-gray-700">Change Given</div>
                                     <Input
-                                        type="number"
-                                        className="h-7 text-right bg-gray-100"
+                                        className="h-7 text-right"
                                         value={changeInput}
                                         readOnly
                                     />
                                 </div>
                             </div>
-                        </CardContent>
-                    </Card>
-                </div>
-
-                {/* Bottom payment summary */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-center text-xs">
-                    <div className="lg:col-span-7 grid grid-cols-7 gap-2">
-                        <div className="bg-yellow-100 border border-yellow-300 rounded p-2">
-                            <div className="text-[10px] text-gray-700">Extra/Less</div>
-                            <Input
-                                className="h-7 text-right"
-                                value={extraLessInput}
-                                onChange={(e) => handleExtraLessChange(e.target.value)}
-                                placeholder="0.00"
-                            />
+                            <div className="lg:col-span-5 flex flex-wrap items-center justify-end gap-3">
+                                <ActionGate tile="garment" page="sales" action="save" fallback={null}>
+                                    <Button
+                                        className="h-8 bg-yellow-300 hover:bg-yellow-400 text-black text-xs px-4"
+                                        onClick={handleSaveSale}
+                                        disabled={loading || cart.length === 0}
+                                    >
+                                        {loading ? 'Saving...' : 'Save'}
+                                    </Button>
+                                </ActionGate>
+                                <ActionGate tile="garment" page="sales" action="print" fallback={null}>
+                                    <Button
+                                        className="h-8 bg-yellow-300 hover:bg-yellow-400 text-black text-xs px-4"
+                                        onClick={handleSaveAndPrint}
+                                        disabled={loading || cart.length === 0}
+                                    >
+                                        Save & Print
+                                    </Button>
+                                </ActionGate>
+                                <ActionGate tile="garment" page="sales" action="pdf" fallback={null}>
+                                    <Button
+                                        className="h-8 bg-yellow-300 hover:bg-yellow-400 text-black text-xs px-4"
+                                        onClick={handleGeneratePDF}
+                                        disabled={cart.length === 0}
+                                    >
+                                        PDF
+                                    </Button>
+                                </ActionGate>
+                                <Button
+                                    className="h-8 bg-yellow-300 hover:bg-yellow-400 text-black text-xs px-4"
+                                    onClick={handleHoldInvoice}
+                                    disabled={cart.length === 0}
+                                >
+                                    Hold
+                                </Button>
+                                <Button
+                                    className="h-8 bg-yellow-300 hover:bg-yellow-400 text-black text-xs px-4"
+                                    onClick={handleViewAllHeld}
+                                >
+                                    View({heldInvoices.length})
+                                </Button>
+                            </div>
                         </div>
-                        <div className="bg-yellow-100 border border-yellow-300 rounded p-2">
-                            <div className="text-[10px] text-gray-700">Savings</div>
-                            <Input
-                                className="h-7 text-right"
-                                value={savingsInput}
-                                onChange={(e) => handleSavingsChange(e.target.value)}
-                                placeholder="0.00"
-                            />
-                        </div>
-                        <div className="bg-yellow-100 border border-yellow-300 rounded p-2">
-                            <div className="text-[10px] text-gray-700">Invoice Total</div>
-                            <Input
-                                className="h-7 text-right font-semibold"
-                                value={invoiceTotal.toFixed(2)}
-                                readOnly
-                            />
-                        </div>
-                        <div className="bg-yellow-100 border border-yellow-300 rounded p-2">
-                            <div className="text-[10px] text-gray-700">Cash</div>
-                            <Input
-                                className="h-7 text-right"
-                                value={cashInput}
-                                onChange={(e) => handlePaymentChange('cashAmount', e.target.value)}
-                                placeholder="0.00"
-                            />
-                        </div>
-                        <div className="bg-yellow-100 border border-yellow-300 rounded p-2">
-                            <div className="text-[10px] text-gray-700">Card</div>
-                            <Input
-                                className="h-7 text-right"
-                                value={cardInput}
-                                onChange={(e) => handlePaymentChange('cardAmount', e.target.value)}
-                                placeholder="0.00"
-                            />
-                        </div>
-                        <div className="bg-yellow-100 border border-yellow-300 rounded p-2">
-                            <div className="text-[10px] text-gray-700">UPI</div>
-                            <Input
-                                className="h-7 text-right"
-                                value={upiInput}
-                                onChange={(e) => handlePaymentChange('upiAmount', e.target.value)}
-                                placeholder="0.00"
-                            />
-                        </div>
-                        <div className="bg-yellow-100 border border-yellow-300 rounded p-2">
-                            <div className="text-[10px] text-gray-700">Change Given</div>
-                            <Input
-                                className="h-7 text-right"
-                                value={changeInput}
-                                readOnly
-                            />
-                        </div>
-                    </div>
-                    <div className="lg:col-span-5 flex flex-wrap items-center justify-end gap-3">
-                        <ActionGate tile="garment" page="sales" action="save" fallback={null}>
-                            <Button
-                                className="h-8 bg-yellow-300 hover:bg-yellow-400 text-black text-xs px-4"
-                                onClick={handleSaveSale}
-                                disabled={loading || cart.length === 0}
-                            >
-                                {loading ? 'Saving...' : 'Save'}
-                            </Button>
-                        </ActionGate>
-                        <ActionGate tile="garment" page="sales" action="print" fallback={null}>
-                            <Button
-                                className="h-8 bg-yellow-300 hover:bg-yellow-400 text-black text-xs px-4"
-                                onClick={handleSaveAndPrint}
-                                disabled={loading || cart.length === 0}
-                            >
-                                Save & Print
-                            </Button>
-                        </ActionGate>
-                        <ActionGate tile="garment" page="sales" action="pdf" fallback={null}>
-                            <Button
-                                className="h-8 bg-yellow-300 hover:bg-yellow-400 text-black text-xs px-4"
-                                onClick={handleGeneratePDF}
-                                disabled={cart.length === 0}
-                            >
-                                PDF
-                            </Button>
-                        </ActionGate>
-                        <Button
-                            className="h-8 bg-yellow-300 hover:bg-yellow-400 text-black text-xs px-4"
-                            onClick={handleHoldInvoice}
-                            disabled={cart.length === 0}
-                        >
-                            Hold
-                        </Button>
-                        <Button
-                            className="h-8 bg-yellow-300 hover:bg-yellow-400 text-black text-xs px-4"
-                            onClick={handleViewAllHeld}
-                        >
-                            View({heldInvoices.length})
-                        </Button>
-                    </div>
-                </div>
+                    </>
+                )}
             </div>
 
             {/* Held Invoices Modal */}

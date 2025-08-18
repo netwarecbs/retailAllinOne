@@ -26,11 +26,6 @@
       "static/chunks/main-app.js",
       "static/chunks/app/garment/layout.js"
     ],
-    "/login/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/login/page.js"
-    ],
     "/garment/inventory/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
@@ -41,15 +36,25 @@
       "static/chunks/main-app.js",
       "static/chunks/app/garment/sales/page.js"
     ],
+    "/garment/purchase/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/garment/purchase/page.js"
+    ],
     "/garment/pos/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/garment/pos/page.js"
     ],
-    "/pharmacy/page": [
+    "/login/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/pharmacy/page.js"
+      "static/chunks/app/login/page.js"
+    ],
+    "/not-found": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/not-found.js"
     ]
   }
 }

@@ -1,9 +1,11 @@
 {
+  "/not-found": "app/not-found.js",
   "/login/page": "app/login/page.js",
+  "/page": "app/page.js",
   "/dashboard/page": "app/dashboard/page.js",
-  "/pharmacy/page": "app/pharmacy/page.js",
-  "/garment/inventory/page": "app/garment/inventory/page.js",
-  "/garment/page": "app/garment/page.js",
   "/garment/sales/page": "app/garment/sales/page.js",
-  "/garment/pos/page": "app/garment/pos/page.js"
+  "/garment/inventory/page": "app/garment/inventory/page.js",
+  "/garment/pos/page": "app/garment/pos/page.js",
+  "/garment/purchase/page": "app/garment/purchase/page.js",
+  "/garment/page": "app/garment/page.js"
 }

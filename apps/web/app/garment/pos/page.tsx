@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { Button, Card, CardContent, Input } from '@retail/ui'
+import { Button, Card, CardContent, Input, Skeleton } from '@retail/ui'
 import { PageGuard, NotAuthorized } from '../../../components/RBAC'
 import { AppDispatch, RootState, setCustomer, addToCart, removeFromCart, updateCartItem, setExtraLess, setSavings, updatePaymentAmount, holdInvoice, loadHeldInvoice, removeHeldInvoice, setInvoiceNumber, createSale } from '@retail/shared'
 import { Customer, Product } from '@retail/shared'
@@ -80,6 +80,18 @@ export default function GarmentPOSPage() {
     const [showInvoicePreview, setShowInvoicePreview] = useState(false)
     const [showConfirmModal, setShowConfirmModal] = useState(false)
     const [invoiceToDelete, setInvoiceToDelete] = useState<string | null>(null)
+
+    // Loading state for the main POS page
+    const [isLoading, setIsLoading] = useState(true)
+
+    // Simulate loading on component mount
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setIsLoading(false)
+        }, 1500) // Simulate 1.5 seconds loading time
+
+        return () => clearTimeout(timer)
+    }, [])
 
     const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -675,605 +687,818 @@ export default function GarmentPOSPage() {
         <PageGuard tile="garment" page="pos" fallback={<NotAuthorized />}>
             <main className="max-w-7xl mx-auto py-4 sm:px-6 lg:px-8">
                 <div className="px-4 sm:px-0 space-y-4">
-                    {/* Title bar - compact */}
-                    <div className="bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-1 rounded shadow-sm">{'<<'} POS</div>
-
-                    {/* Header form */}
-                    <Card className="border-0 shadow-sm">
-                        <CardContent className="p-4">
-                            <div className="grid grid-cols-1 md:grid-cols-12 gap-3 text-xs">
-                                {/* Left column */}
-                                <div className="md:col-span-7 grid grid-cols-12 gap-3">
-                                    <div className="col-span-6 relative" ref={dropdownRef}>
-                                        <label className="block text-gray-600 mb-1">Name (F3)</label>
-                                        <div className="relative">
-                                            <Input
-                                                className="h-8 pr-8"
-                                                value={searchQuery}
-                                                onChange={handleInputChange}
-                                                onKeyDown={handleKeyDown}
-                                                placeholder="Search customer..."
-                                            />
-                                            {customer && (
-                                                <button
-                                                    onClick={handleClearCustomer}
-                                                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                                                >
-                                                    ✕
-                                                </button>
-                                            )}
-                                        </div>
-
-                                        {/* Customer Dropdown */}
-                                        {showDropdown && filteredCustomers.length > 0 && (
-                                            <div className="absolute z-50 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto mt-1">
-                                                {filteredCustomers.map((customer) => (
-                                                    <div
-                                                        key={customer.id}
-                                                        onClick={() => handleCustomerSelect(customer)}
-                                                        className="p-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0 text-xs"
-                                                    >
-                                                        <div className="font-medium">{customer.name}</div>
-                                                        <div className="text-gray-500">{customer.phone} • {customer.email}</div>
-                                                    </div>
-                                                ))}
-                                                <div
-                                                    onClick={handleAddNewCustomer}
-                                                    className="p-2 hover:bg-blue-50 cursor-pointer border-t border-gray-200 text-blue-600 font-medium text-xs"
-                                                >
-                                                    + Add New Customer: "{searchQuery}"
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {/* Selected Customer Info */}
-                                        {customer && !showDropdown && (
-                                            <div className="mt-1 p-2 bg-blue-50 border border-blue-200 rounded text-xs">
-                                                <div className="flex items-center justify-between">
-                                                    <div>
-                                                        <div className="font-medium text-blue-900">{customer.name}</div>
-                                                        <div className="text-blue-700">{customer.phone} • {customer.email}</div>
-                                                    </div>
-                                                    <span className={`text-xs px-2 py-1 rounded-full ${customer.isWholesale
-                                                        ? 'bg-blue-100 text-blue-800'
-                                                        : 'bg-green-100 text-green-800'
-                                                        }`}>
-                                                        {customer.isWholesale ? 'Wholesale' : 'Retail'}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="col-span-3">
-                                        <label className="block text-gray-600 mb-1">L.Card</label>
-                                        <Input
-                                            className="h-8"
-                                            value={customer?.loyaltyCard || ''}
-                                            readOnly
-                                        />
-                                    </div>
-                                    <div className="col-span-1">
-                                        <label className="block text-gray-600 mb-1">Invoice</label>
-                                        <Input
-                                            className="h-8 text-right"
-                                            value={currentInvoiceNumber}
-                                            onChange={(e) => dispatch(setInvoiceNumber(e.target.value))}
-                                        />
-                                    </div>
-                                    <div className="col-span-2">
-                                        <label className="block text-gray-600 mb-1">Date</label>
-                                        <Input type="date" className="h-8" defaultValue="2025-08-11" />
-                                    </div>
-                                    <div className="col-span-6">
-                                        <label className="block text-gray-600 mb-1">Mobile</label>
-                                        <Input
-                                            className="h-8"
-                                            value={customer?.phone || ''}
-                                            readOnly
-                                        />
-                                    </div>
-                                    <div className="col-span-6">
-                                        <label className="block text-gray-600 mb-1">GSTNo.</label>
-                                        <Input
-                                            className="h-8"
-                                            value={customer?.gstin || ''}
-                                            readOnly
-                                        />
-                                    </div>
-                                    <div className="col-span-12">
-                                        <label className="block text-gray-600 mb-1">Address</label>
-                                        <Input
-                                            className="h-8"
-                                            value={customer?.address || ''}
-                                            readOnly
-                                        />
-                                    </div>
-                                    <div className="col-span-4">
-                                        <label className="block text-gray-600 mb-1">State</label>
-                                        <select className="w-full border rounded px-2 py-1 h-8">
-                                            <option>West Bengal (19)</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                {/* Right info widgets */}
-                                <div className="md:col-span-5 grid grid-cols-2 gap-2 items-start">
-                                    <div className="bg-gray-100 border rounded p-2 text-[10px]">
-                                        <div className="text-gray-500">Credit Limit</div>
-                                        <div className="text-gray-700 font-medium">
-                                            {customer ? `₹${customer.creditLimit?.toLocaleString() || '0'}` : 'N/A'}
-                                        </div>
-                                    </div>
-                                    <div className="bg-gray-100 border rounded p-2 text-[10px]">
-                                        <div className="text-gray-500">Outstanding</div>
-                                        <div className={`font-medium ${customer?.outstandingAmount && customer.outstandingAmount > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                                            {customer ? `₹${customer.outstandingAmount?.toLocaleString() || '0'}` : 'N/A'}
-                                        </div>
-                                    </div>
-                                    <div className="bg-gray-100 border rounded p-2 text-[10px]">
-                                        <div className="text-gray-500">Type</div>
-                                        <div className="text-gray-700 font-medium">
-                                            {customer ? (customer.isWholesale ? 'Wholesale' : 'Retail') : 'N/A'}
-                                        </div>
-                                    </div>
-                                    <div className="bg-gray-100 border rounded p-2 text-[10px]">
-                                        <div className="text-gray-500">Status</div>
-                                        <div className="text-gray-700 font-medium">
-                                            {customer ? (customer.outstandingAmount && customer.outstandingAmount > customer.creditLimit! ? 'Overdue' : 'Active') : 'N/A'}
-                                        </div>
-                                    </div>
-                                </div>
+                    {/* Loading State */}
+                    {isLoading ? (
+                        <>
+                            {/* Title bar skeleton */}
+                            <div className="bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-1 rounded shadow-sm">
+                                <Skeleton className="h-4 w-12" />
                             </div>
 
-                            {/* Quick entry row */}
-                            <div className="mt-3 grid grid-cols-1 lg:grid-cols-12 gap-2 text-xs items-center">
-                                <div className="lg:col-span-1 flex items-center gap-2">
-                                    <span className="inline-flex items-center justify-center w-5 h-5 border rounded">🏷️</span>
-                                    <span>Barcode (F2)</span>
-                                </div>
-                                <div className="lg:col-span-3">
-                                    <div className="relative">
-                                        <Input
-                                            className={`h-8 ${selectedProduct ? 'border-green-500 bg-green-50' : ''}`}
-                                            placeholder="Scan barcode/SKU"
-                                            value={barcodeInput}
-                                            onChange={handleBarcodeScan}
-                                        />
-                                        {selectedProduct && (
-                                            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 text-green-600">
-                                                ✓
-                                            </div>
-                                        )}
-                                        {selectedProduct && (
-                                            <div className="absolute -bottom-6 left-0 text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
-                                                Found: {selectedProduct.name}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                                <div className="lg:col-span-4">
-                                    <Input
-                                        className="h-8"
-                                        placeholder="Description"
-                                        value={descriptionInput}
-                                        onChange={(e) => setDescriptionInput(e.target.value)}
-                                    />
-                                </div>
-                                <div className="lg:col-span-1">
-                                    <Input
-                                        className="h-8 text-right"
-                                        placeholder="Qty"
-                                        value={quantityInput}
-                                        onChange={(e) => setQuantityInput(e.target.value)}
-                                    />
-                                </div>
-                                <div className="lg:col-span-2">
-                                    <Input
-                                        className="h-8 text-right"
-                                        placeholder="Sale Price"
-                                        value={priceInput}
-                                        onChange={(e) => setPriceInput(e.target.value)}
-                                    />
-                                </div>
-                                <div className="lg:col-span-1">
-                                    <Button
-                                        className="h-8 bg-blue-600 hover:bg-blue-700 w-full"
-                                        onClick={handleEnterProduct}
-                                    >
-                                        Enter
-                                    </Button>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* Add New Customer Modal */}
-                    {isAddingCustomer && (
-                        <Card className="border-0 shadow-sm">
-                            <CardContent className="p-4">
-                                <div className="flex items-center justify-between mb-4">
-                                    <h3 className="text-sm font-semibold">Add New Customer</h3>
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => setIsAddingCustomer(false)}
-                                    >
-                                        ✕
-                                    </Button>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                                    <div>
-                                        <label className="block text-gray-600 mb-1">Name *</label>
-                                        <Input
-                                            className="h-8"
-                                            value={newCustomer.name}
-                                            onChange={(e) => handleNewCustomerChange('name', e.target.value)}
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-gray-600 mb-1">Phone</label>
-                                        <Input
-                                            className="h-8"
-                                            value={newCustomer.phone}
-                                            onChange={(e) => handleNewCustomerChange('phone', e.target.value)}
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-gray-600 mb-1">Email</label>
-                                        <Input
-                                            className="h-8"
-                                            value={newCustomer.email}
-                                            onChange={(e) => handleNewCustomerChange('email', e.target.value)}
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-gray-600 mb-1">GSTIN</label>
-                                        <Input
-                                            className="h-8"
-                                            value={newCustomer.gstin}
-                                            onChange={(e) => handleNewCustomerChange('gstin', e.target.value)}
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-gray-600 mb-1">PAN</label>
-                                        <Input
-                                            className="h-8"
-                                            value={newCustomer.pan}
-                                            onChange={(e) => handleNewCustomerChange('pan', e.target.value)}
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-gray-600 mb-1">Loyalty Card</label>
-                                        <Input
-                                            className="h-8"
-                                            value={newCustomer.loyaltyCard}
-                                            onChange={(e) => handleNewCustomerChange('loyaltyCard', e.target.value)}
-                                        />
-                                    </div>
-                                    <div className="md:col-span-2">
-                                        <label className="block text-gray-600 mb-1">Address</label>
-                                        <Input
-                                            className="h-8"
-                                            value={newCustomer.address}
-                                            onChange={(e) => handleNewCustomerChange('address', e.target.value)}
-                                        />
-                                    </div>
-                                    <div className="md:col-span-2">
-                                        <label className="flex items-center gap-2">
-                                            <input
-                                                type="checkbox"
-                                                checked={newCustomer.isWholesale}
-                                                onChange={(e) => handleNewCustomerChange('isWholesale', e.target.checked)}
-                                            />
-                                            <span className="text-gray-600">Wholesale Customer</span>
-                                        </label>
-                                    </div>
-                                </div>
-                                <div className="flex gap-2 mt-4">
-                                    <Button
-                                        onClick={handleSaveNewCustomer}
-                                        className="h-8 bg-blue-600 hover:bg-blue-700 text-xs"
-                                    >
-                                        Save Customer
-                                    </Button>
-                                    <Button
-                                        variant="outline"
-                                        onClick={() => setIsAddingCustomer(false)}
-                                        className="h-8 text-xs"
-                                    >
-                                        Cancel
-                                    </Button>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    )}
-
-                    {/* Main grid: left table, right tiles */}
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-                        {/* Left table */}
-                        <Card className="border-0 shadow-sm lg:col-span-8">
-                            <CardContent className="p-0">
-                                <div className="overflow-x-auto">
-                                    <table className="w-full text-xs">
-                                        <thead>
-                                            <tr className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white">
-                                                <th className="px-3 py-2 text-left">#</th>
-                                                <th className="px-3 py-2 text-left">DESCRIPTION</th>
-                                                <th className="px-3 py-2 text-left">LOCATE</th>
-                                                <th className="px-3 py-2 text-left">OFFERS</th>
-                                                <th className="px-3 py-2 text-left">NET QTY</th>
-                                                <th className="px-3 py-2 text-right">PRICE</th>
-                                                <th className="px-3 py-2 text-right">DISC.</th>
-                                                <th className="px-3 py-2 text-right">TOTAL VALUE</th>
-                                                <th className="px-3 py-2 text-right"></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {cart.length === 0 ? (
-                                                <tr>
-                                                    <td colSpan={9} className="px-3 py-4 text-center text-gray-500">
-                                                        No items in cart. Scan a product to get started.
-                                                    </td>
-                                                </tr>
-                                            ) : (
-                                                cart.map((item, index) => (
-                                                    <tr key={item.id} className="border-t">
-                                                        <td className="px-3 py-2">{index + 1}</td>
-                                                        <td className="px-3 py-2">{item.productName}</td>
-                                                        <td className="px-3 py-2">{item.sku}</td>
-                                                        <td className="px-3 py-2">
-                                                            {item.size && (
-                                                                <div className="bg-yellow-200 text-yellow-900 text-[10px] px-1">
-                                                                    {item.size}
-                                                                </div>
-                                                            )}
-                                                        </td>
-                                                        <td className="px-3 py-2">{item.quantity}</td>
-                                                        <td className="px-3 py-2 text-right">₹{item.unitPrice}</td>
-                                                        <td className="px-3 py-2 text-right">₹{item.discount}</td>
-                                                        <td className="px-3 py-2 text-right">₹{item.total}</td>
-                                                        <td className="px-3 py-2 text-right">
-                                                            <div className="flex items-center gap-2 justify-end">
-                                                                <Button
-                                                                    variant="outline"
-                                                                    className="h-6 px-2"
-                                                                    onClick={() => handleUpdateCartItem(item.id, item.quantity + 1)}
-                                                                >
-                                                                    ✎
-                                                                </Button>
-                                                                <Button
-                                                                    variant="outline"
-                                                                    className="h-6 px-2"
-                                                                    onClick={() => handleRemoveFromCart(item.id)}
-                                                                >
-                                                                    🗑
-                                                                </Button>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                ))
-                                            )}
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <div className="px-3 py-2 text-[11px] text-gray-600 flex items-center gap-4">
-                                    <div>TOTAL {cart.length}</div>
-                                    <div className="ml-auto">₹{total.toFixed(2)}</div>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        {/* Right tiles area */}
-                        <div className="lg:col-span-4 space-y-3">
-                            {/* Quick Products */}
+                            {/* Header form skeleton */}
                             <Card className="border-0 shadow-sm">
-                                <CardContent className="p-2 text-xs">
-                                    <div className="bg-yellow-200 text-gray-800 inline-block px-2 py-1 rounded border border-yellow-300">Quick Products</div>
+                                <CardContent className="p-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-12 gap-3 text-xs">
+                                        {/* Left column skeleton */}
+                                        <div className="md:col-span-7 grid grid-cols-12 gap-3">
+                                            <div className="col-span-6 relative">
+                                                <Skeleton className="h-3 w-16 mb-1" />
+                                                <Skeleton className="h-8 w-full rounded" />
+                                            </div>
+                                            <div className="col-span-3">
+                                                <Skeleton className="h-3 w-12 mb-1" />
+                                                <Skeleton className="h-8 w-full rounded" />
+                                            </div>
+                                            <div className="col-span-1">
+                                                <Skeleton className="h-3 w-12 mb-1" />
+                                                <Skeleton className="h-8 w-full rounded" />
+                                            </div>
+                                            <div className="col-span-2">
+                                                <Skeleton className="h-3 w-8 mb-1" />
+                                                <Skeleton className="h-8 w-full rounded" />
+                                            </div>
+                                            <div className="col-span-6">
+                                                <Skeleton className="h-3 w-12 mb-1" />
+                                                <Skeleton className="h-8 w-full rounded" />
+                                            </div>
+                                            <div className="col-span-6">
+                                                <Skeleton className="h-3 w-12 mb-1" />
+                                                <Skeleton className="h-8 w-full rounded" />
+                                            </div>
+                                            <div className="col-span-12">
+                                                <Skeleton className="h-3 w-16 mb-1" />
+                                                <Skeleton className="h-8 w-full rounded" />
+                                            </div>
+                                            <div className="col-span-4">
+                                                <Skeleton className="h-3 w-10 mb-1" />
+                                                <Skeleton className="h-8 w-full rounded" />
+                                            </div>
+                                        </div>
+
+                                        {/* Right info widgets skeleton */}
+                                        <div className="md:col-span-5 grid grid-cols-2 gap-2 items-start">
+                                            <div className="bg-gray-100 border rounded p-2 text-[10px]">
+                                                <Skeleton className="h-3 w-16 mb-1" />
+                                                <Skeleton className="h-4 w-12" />
+                                            </div>
+                                            <div className="bg-gray-100 border rounded p-2 text-[10px]">
+                                                <Skeleton className="h-3 w-20 mb-1" />
+                                                <Skeleton className="h-4 w-12" />
+                                            </div>
+                                            <div className="bg-gray-100 border rounded p-2 text-[10px]">
+                                                <Skeleton className="h-3 w-8 mb-1" />
+                                                <Skeleton className="h-4 w-16" />
+                                            </div>
+                                            <div className="bg-gray-100 border rounded p-2 text-[10px]">
+                                                <Skeleton className="h-3 w-12 mb-1" />
+                                                <Skeleton className="h-4 w-12" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Quick entry row skeleton */}
+                                    <div className="mt-3 grid grid-cols-1 lg:grid-cols-12 gap-2 text-xs items-center">
+                                        <div className="lg:col-span-1 flex items-center gap-2">
+                                            <Skeleton className="h-5 w-5 rounded" />
+                                            <Skeleton className="h-3 w-20" />
+                                        </div>
+                                        <div className="lg:col-span-3">
+                                            <Skeleton className="h-8 w-full rounded" />
+                                        </div>
+                                        <div className="lg:col-span-4">
+                                            <Skeleton className="h-8 w-full rounded" />
+                                        </div>
+                                        <div className="lg:col-span-1">
+                                            <Skeleton className="h-8 w-full rounded" />
+                                        </div>
+                                        <div className="lg:col-span-2">
+                                            <Skeleton className="h-8 w-full rounded" />
+                                        </div>
+                                        <div className="lg:col-span-1">
+                                            <Skeleton className="h-8 w-full rounded" />
+                                        </div>
+                                    </div>
                                 </CardContent>
                             </Card>
-                            {/* Recent Items */}
+
+                            {/* Main grid skeleton */}
+                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                                {/* Left table skeleton */}
+                                <Card className="border-0 shadow-sm lg:col-span-8">
+                                    <CardContent className="p-0">
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full text-xs">
+                                                <thead>
+                                                    <tr className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white">
+                                                        <th className="px-3 py-2 text-left">#</th>
+                                                        <th className="px-3 py-2 text-left">DESCRIPTION</th>
+                                                        <th className="px-3 py-2 text-left">LOCATE</th>
+                                                        <th className="px-3 py-2 text-left">OFFERS</th>
+                                                        <th className="px-3 py-2 text-left">NET QTY</th>
+                                                        <th className="px-3 py-2 text-right">PRICE</th>
+                                                        <th className="px-3 py-2 text-right">DISC.</th>
+                                                        <th className="px-3 py-2 text-right">TOTAL VALUE</th>
+                                                        <th className="px-3 py-2 text-right"></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {Array.from({ length: 3 }).map((_, index) => (
+                                                        <tr key={index} className="border-t">
+                                                            <td className="px-3 py-2">
+                                                                <Skeleton className="h-4 w-4" />
+                                                            </td>
+                                                            <td className="px-3 py-2">
+                                                                <Skeleton className="h-4 w-32" />
+                                                            </td>
+                                                            <td className="px-3 py-2">
+                                                                <Skeleton className="h-4 w-16" />
+                                                            </td>
+                                                            <td className="px-3 py-2">
+                                                                <Skeleton className="h-4 w-12" />
+                                                            </td>
+                                                            <td className="px-3 py-2">
+                                                                <Skeleton className="h-4 w-8" />
+                                                            </td>
+                                                            <td className="px-3 py-2 text-right">
+                                                                <Skeleton className="h-4 w-12 ml-auto" />
+                                                            </td>
+                                                            <td className="px-3 py-2 text-right">
+                                                                <Skeleton className="h-4 w-8 ml-auto" />
+                                                            </td>
+                                                            <td className="px-3 py-2 text-right">
+                                                                <Skeleton className="h-4 w-16 ml-auto" />
+                                                            </td>
+                                                            <td className="px-3 py-2 text-right">
+                                                                <div className="flex items-center gap-2 justify-end">
+                                                                    <Skeleton className="h-6 w-6 rounded" />
+                                                                    <Skeleton className="h-6 w-6 rounded" />
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div className="px-3 py-2 text-[11px] text-gray-600 flex items-center gap-4">
+                                            <Skeleton className="h-3 w-16" />
+                                            <Skeleton className="h-3 w-12 ml-auto" />
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                {/* Right tiles area skeleton */}
+                                <div className="lg:col-span-4 space-y-3">
+                                    {/* Quick Products skeleton */}
+                                    <Card className="border-0 shadow-sm">
+                                        <CardContent className="p-2 text-xs">
+                                            <Skeleton className="h-6 w-24 rounded" />
+                                        </CardContent>
+                                    </Card>
+                                    {/* Recent Items skeleton */}
+                                    <Card className="border-0 shadow-sm">
+                                        <CardContent className="p-3">
+                                            <div className="flex items-center justify-between mb-3">
+                                                <Skeleton className="h-4 w-20" />
+                                                <Skeleton className="h-6 w-16 rounded" />
+                                            </div>
+                                            <div className="grid grid-cols-4 gap-2">
+                                                {Array.from({ length: 8 }).map((_, index) => (
+                                                    <div key={index} className="border rounded p-2">
+                                                        <Skeleton className="h-16 w-full rounded mb-2" />
+                                                        <div className="flex items-center justify-between">
+                                                            <Skeleton className="h-3 w-8" />
+                                                            <Skeleton className="h-3 w-6" />
+                                                        </div>
+                                                        <Skeleton className="h-3 w-full mt-1" />
+                                                        <Skeleton className="h-2 w-12 mt-1" />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                </div>
+                            </div>
+
+                            {/* Bottom payment summary skeleton */}
+                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-center text-xs">
+                                <div className="lg:col-span-7 grid grid-cols-7 gap-2">
+                                    {Array.from({ length: 7 }).map((_, index) => (
+                                        <div key={index} className="bg-yellow-100 border border-yellow-300 rounded p-2">
+                                            <Skeleton className="h-3 w-16 mb-1" />
+                                            <Skeleton className="h-7 w-full rounded" />
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="lg:col-span-5 flex flex-wrap items-center justify-end gap-3">
+                                    {Array.from({ length: 5 }).map((_, index) => (
+                                        <Skeleton key={index} className="h-8 w-20 rounded" />
+                                    ))}
+                                </div>
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            {/* Title bar - compact */}
+                            <div className="bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-1 rounded shadow-sm">{'<<'} POS</div>
+
+                            {/* Header form */}
                             <Card className="border-0 shadow-sm">
-                                <CardContent className="p-3">
-                                    <div className="flex items-center justify-between mb-3">
-                                        <h3 className="text-sm font-semibold text-gray-700">Recent Items</h3>
-                                        {recentItems.length > 12 && (
+                                <CardContent className="p-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-12 gap-3 text-xs">
+                                        {/* Left column */}
+                                        <div className="md:col-span-7 grid grid-cols-12 gap-3">
+                                            <div className="col-span-6 relative" ref={dropdownRef}>
+                                                <label className="block text-gray-600 mb-1">Name (F3)</label>
+                                                <div className="relative">
+                                                    <Input
+                                                        className="h-8 pr-8"
+                                                        value={searchQuery}
+                                                        onChange={handleInputChange}
+                                                        onKeyDown={handleKeyDown}
+                                                        placeholder="Search customer..."
+                                                    />
+                                                    {customer && (
+                                                        <button
+                                                            onClick={handleClearCustomer}
+                                                            className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                                        >
+                                                            ✕
+                                                        </button>
+                                                    )}
+                                                </div>
+
+                                                {/* Customer Dropdown */}
+                                                {showDropdown && filteredCustomers.length > 0 && (
+                                                    <div className="absolute z-50 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto mt-1">
+                                                        {filteredCustomers.map((customer) => (
+                                                            <div
+                                                                key={customer.id}
+                                                                onClick={() => handleCustomerSelect(customer)}
+                                                                className="p-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0 text-xs"
+                                                            >
+                                                                <div className="font-medium">{customer.name}</div>
+                                                                <div className="text-gray-500">{customer.phone} • {customer.email}</div>
+                                                            </div>
+                                                        ))}
+                                                        <div
+                                                            onClick={handleAddNewCustomer}
+                                                            className="p-2 hover:bg-blue-50 cursor-pointer border-t border-gray-200 text-blue-600 font-medium text-xs"
+                                                        >
+                                                            + Add New Customer: "{searchQuery}"
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* Selected Customer Info */}
+                                                {customer && !showDropdown && (
+                                                    <div className="mt-1 p-2 bg-blue-50 border border-blue-200 rounded text-xs">
+                                                        <div className="flex items-center justify-between">
+                                                            <div>
+                                                                <div className="font-medium text-blue-900">{customer.name}</div>
+                                                                <div className="text-blue-700">{customer.phone} • {customer.email}</div>
+                                                            </div>
+                                                            <span className={`text-xs px-2 py-1 rounded-full ${customer.isWholesale
+                                                                ? 'bg-blue-100 text-blue-800'
+                                                                : 'bg-green-100 text-green-800'
+                                                                }`}>
+                                                                {customer.isWholesale ? 'Wholesale' : 'Retail'}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <div className="col-span-3">
+                                                <label className="block text-gray-600 mb-1">L.Card</label>
+                                                <Input
+                                                    className="h-8"
+                                                    value={customer?.loyaltyCard || ''}
+                                                    readOnly
+                                                />
+                                            </div>
+                                            <div className="col-span-1">
+                                                <label className="block text-gray-600 mb-1">Invoice</label>
+                                                <Input
+                                                    className="h-8 text-right"
+                                                    value={currentInvoiceNumber}
+                                                    onChange={(e) => dispatch(setInvoiceNumber(e.target.value))}
+                                                />
+                                            </div>
+                                            <div className="col-span-2">
+                                                <label className="block text-gray-600 mb-1">Date</label>
+                                                <Input type="date" className="h-8" defaultValue="2025-08-11" />
+                                            </div>
+                                            <div className="col-span-6">
+                                                <label className="block text-gray-600 mb-1">Mobile</label>
+                                                <Input
+                                                    className="h-8"
+                                                    value={customer?.phone || ''}
+                                                    readOnly
+                                                />
+                                            </div>
+                                            <div className="col-span-6">
+                                                <label className="block text-gray-600 mb-1">GSTNo.</label>
+                                                <Input
+                                                    className="h-8"
+                                                    value={customer?.gstin || ''}
+                                                    readOnly
+                                                />
+                                            </div>
+                                            <div className="col-span-12">
+                                                <label className="block text-gray-600 mb-1">Address</label>
+                                                <Input
+                                                    className="h-8"
+                                                    value={customer?.address || ''}
+                                                    readOnly
+                                                />
+                                            </div>
+                                            <div className="col-span-4">
+                                                <label className="block text-gray-600 mb-1">State</label>
+                                                <select className="w-full border rounded px-2 py-1 h-8">
+                                                    <option>West Bengal (19)</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        {/* Right info widgets */}
+                                        <div className="md:col-span-5 grid grid-cols-2 gap-2 items-start">
+                                            <div className="bg-gray-100 border rounded p-2 text-[10px]">
+                                                <div className="text-gray-500">Credit Limit</div>
+                                                <div className="text-gray-700 font-medium">
+                                                    {customer ? `₹${customer.creditLimit?.toLocaleString() || '0'}` : 'N/A'}
+                                                </div>
+                                            </div>
+                                            <div className="bg-gray-100 border rounded p-2 text-[10px]">
+                                                <div className="text-gray-500">Outstanding</div>
+                                                <div className={`font-medium ${customer?.outstandingAmount && customer.outstandingAmount > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                                                    {customer ? `₹${customer.outstandingAmount?.toLocaleString() || '0'}` : 'N/A'}
+                                                </div>
+                                            </div>
+                                            <div className="bg-gray-100 border rounded p-2 text-[10px]">
+                                                <div className="text-gray-500">Type</div>
+                                                <div className="text-gray-700 font-medium">
+                                                    {customer ? (customer.isWholesale ? 'Wholesale' : 'Retail') : 'N/A'}
+                                                </div>
+                                            </div>
+                                            <div className="bg-gray-100 border rounded p-2 text-[10px]">
+                                                <div className="text-gray-500">Status</div>
+                                                <div className="text-gray-700 font-medium">
+                                                    {customer ? (customer.outstandingAmount && customer.outstandingAmount > customer.creditLimit! ? 'Overdue' : 'Active') : 'N/A'}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Quick entry row */}
+                                    <div className="mt-3 grid grid-cols-1 lg:grid-cols-12 gap-2 text-xs items-center">
+                                        <div className="lg:col-span-1 flex items-center gap-2">
+                                            <span className="inline-flex items-center justify-center w-5 h-5 border rounded">🏷️</span>
+                                            <span>Barcode (F2)</span>
+                                        </div>
+                                        <div className="lg:col-span-3">
+                                            <div className="relative">
+                                                <Input
+                                                    className={`h-8 ${selectedProduct ? 'border-green-500 bg-green-50' : ''}`}
+                                                    placeholder="Scan barcode/SKU"
+                                                    value={barcodeInput}
+                                                    onChange={handleBarcodeScan}
+                                                />
+                                                {selectedProduct && (
+                                                    <div className="absolute right-2 top-1/2 transform -translate-y-1/2 text-green-600">
+                                                        ✓
+                                                    </div>
+                                                )}
+                                                {selectedProduct && (
+                                                    <div className="absolute -bottom-6 left-0 text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
+                                                        Found: {selectedProduct.name}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div className="lg:col-span-4">
+                                            <Input
+                                                className="h-8"
+                                                placeholder="Description"
+                                                value={descriptionInput}
+                                                onChange={(e) => setDescriptionInput(e.target.value)}
+                                            />
+                                        </div>
+                                        <div className="lg:col-span-1">
+                                            <Input
+                                                className="h-8 text-right"
+                                                placeholder="Qty"
+                                                value={quantityInput}
+                                                onChange={(e) => setQuantityInput(e.target.value)}
+                                            />
+                                        </div>
+                                        <div className="lg:col-span-2">
+                                            <Input
+                                                className="h-8 text-right"
+                                                placeholder="Sale Price"
+                                                value={priceInput}
+                                                onChange={(e) => setPriceInput(e.target.value)}
+                                            />
+                                        </div>
+                                        <div className="lg:col-span-1">
+                                            <Button
+                                                className="h-8 bg-blue-600 hover:bg-blue-700 w-full"
+                                                onClick={handleEnterProduct}
+                                            >
+                                                Enter
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            {/* Add New Customer Modal */}
+                            {isAddingCustomer && (
+                                <Card className="border-0 shadow-sm">
+                                    <CardContent className="p-4">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <h3 className="text-sm font-semibold">Add New Customer</h3>
                                             <Button
                                                 variant="outline"
                                                 size="sm"
-                                                onClick={() => setShowRecentModal(true)}
-                                                className="text-xs px-2 py-1"
+                                                onClick={() => setIsAddingCustomer(false)}
                                             >
-                                                More ({recentItems.length})
+                                                ✕
                                             </Button>
-                                        )}
-                                    </div>
-                                    {displayRecentItems.length === 0 ? (
-                                        <div className="text-center text-gray-500 text-xs py-4">
-                                            No recent items
                                         </div>
-                                    ) : (
-                                        <div className="grid grid-cols-4 gap-2">
-                                            {displayRecentItems.map((item) => {
-                                                const isInCart = isItemInCart(item.productId, item.size, item.color)
-                                                const cartItem = cart.find(cartItem =>
-                                                    cartItem.productId === item.productId &&
-                                                    cartItem.size === item.size &&
-                                                    cartItem.color === item.color
-                                                )
-                                                return (
-                                                    <div
-                                                        key={item.id}
-                                                        onClick={() => handleRecentItemClick(item)}
-                                                        className={`border rounded p-2 cursor-pointer transition-colors ${isInCart
-                                                            ? 'bg-blue-50 border-blue-300 hover:bg-blue-100'
-                                                            : 'bg-white border-gray-200 hover:bg-blue-50 hover:border-blue-300'
-                                                            }`}
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                                            <div>
+                                                <label className="block text-gray-600 mb-1">Name *</label>
+                                                <Input
+                                                    className="h-8"
+                                                    value={newCustomer.name}
+                                                    onChange={(e) => handleNewCustomerChange('name', e.target.value)}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-gray-600 mb-1">Phone</label>
+                                                <Input
+                                                    className="h-8"
+                                                    value={newCustomer.phone}
+                                                    onChange={(e) => handleNewCustomerChange('phone', e.target.value)}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-gray-600 mb-1">Email</label>
+                                                <Input
+                                                    className="h-8"
+                                                    value={newCustomer.email}
+                                                    onChange={(e) => handleNewCustomerChange('email', e.target.value)}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-gray-600 mb-1">GSTIN</label>
+                                                <Input
+                                                    className="h-8"
+                                                    value={newCustomer.gstin}
+                                                    onChange={(e) => handleNewCustomerChange('gstin', e.target.value)}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-gray-600 mb-1">PAN</label>
+                                                <Input
+                                                    className="h-8"
+                                                    value={newCustomer.pan}
+                                                    onChange={(e) => handleNewCustomerChange('pan', e.target.value)}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-gray-600 mb-1">Loyalty Card</label>
+                                                <Input
+                                                    className="h-8"
+                                                    value={newCustomer.loyaltyCard}
+                                                    onChange={(e) => handleNewCustomerChange('loyaltyCard', e.target.value)}
+                                                />
+                                            </div>
+                                            <div className="md:col-span-2">
+                                                <label className="block text-gray-600 mb-1">Address</label>
+                                                <Input
+                                                    className="h-8"
+                                                    value={newCustomer.address}
+                                                    onChange={(e) => handleNewCustomerChange('address', e.target.value)}
+                                                />
+                                            </div>
+                                            <div className="md:col-span-2">
+                                                <label className="flex items-center gap-2">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={newCustomer.isWholesale}
+                                                        onChange={(e) => handleNewCustomerChange('isWholesale', e.target.checked)}
+                                                    />
+                                                    <span className="text-gray-600">Wholesale Customer</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-2 mt-4">
+                                            <Button
+                                                onClick={handleSaveNewCustomer}
+                                                className="h-8 bg-blue-600 hover:bg-blue-700 text-xs"
+                                            >
+                                                Save Customer
+                                            </Button>
+                                            <Button
+                                                variant="outline"
+                                                onClick={() => setIsAddingCustomer(false)}
+                                                className="h-8 text-xs"
+                                            >
+                                                Cancel
+                                            </Button>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            )}
+
+                            {/* Main grid: left table, right tiles */}
+                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                                {/* Left table */}
+                                <Card className="border-0 shadow-sm lg:col-span-8">
+                                    <CardContent className="p-0">
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full text-xs">
+                                                <thead>
+                                                    <tr className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white">
+                                                        <th className="px-3 py-2 text-left">#</th>
+                                                        <th className="px-3 py-2 text-left">DESCRIPTION</th>
+                                                        <th className="px-3 py-2 text-left">LOCATE</th>
+                                                        <th className="px-3 py-2 text-left">OFFERS</th>
+                                                        <th className="px-3 py-2 text-left">NET QTY</th>
+                                                        <th className="px-3 py-2 text-right">PRICE</th>
+                                                        <th className="px-3 py-2 text-right">DISC.</th>
+                                                        <th className="px-3 py-2 text-right">TOTAL VALUE</th>
+                                                        <th className="px-3 py-2 text-right"></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {cart.length === 0 ? (
+                                                        <tr>
+                                                            <td colSpan={9} className="px-3 py-4 text-center text-gray-500">
+                                                                No items in cart. Scan a product to get started.
+                                                            </td>
+                                                        </tr>
+                                                    ) : (
+                                                        cart.map((item, index) => (
+                                                            <tr key={item.id} className="border-t">
+                                                                <td className="px-3 py-2">{index + 1}</td>
+                                                                <td className="px-3 py-2">{item.productName}</td>
+                                                                <td className="px-3 py-2">{item.sku}</td>
+                                                                <td className="px-3 py-2">
+                                                                    {item.size && (
+                                                                        <div className="bg-yellow-200 text-yellow-900 text-[10px] px-1">
+                                                                            {item.size}
+                                                                        </div>
+                                                                    )}
+                                                                </td>
+                                                                <td className="px-3 py-2">{item.quantity}</td>
+                                                                <td className="px-3 py-2 text-right">₹{item.unitPrice}</td>
+                                                                <td className="px-3 py-2 text-right">₹{item.discount}</td>
+                                                                <td className="px-3 py-2 text-right">₹{item.total}</td>
+                                                                <td className="px-3 py-2 text-right">
+                                                                    <div className="flex items-center gap-2 justify-end">
+                                                                        <Button
+                                                                            variant="outline"
+                                                                            className="h-6 px-2"
+                                                                            onClick={() => handleUpdateCartItem(item.id, item.quantity + 1)}
+                                                                        >
+                                                                            ✎
+                                                                        </Button>
+                                                                        <Button
+                                                                            variant="outline"
+                                                                            className="h-6 px-2"
+                                                                            onClick={() => handleRemoveFromCart(item.id)}
+                                                                        >
+                                                                            🗑
+                                                                        </Button>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        ))
+                                                    )}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div className="px-3 py-2 text-[11px] text-gray-600 flex items-center gap-4">
+                                            <div>TOTAL {cart.length}</div>
+                                            <div className="ml-auto">₹{total.toFixed(2)}</div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                {/* Right tiles area */}
+                                <div className="lg:col-span-4 space-y-3">
+                                    {/* Quick Products */}
+                                    <Card className="border-0 shadow-sm">
+                                        <CardContent className="p-2 text-xs">
+                                            <div className="bg-yellow-200 text-gray-800 inline-block px-2 py-1 rounded border border-yellow-300">Quick Products</div>
+                                        </CardContent>
+                                    </Card>
+                                    {/* Recent Items */}
+                                    <Card className="border-0 shadow-sm">
+                                        <CardContent className="p-3">
+                                            <div className="flex items-center justify-between mb-3">
+                                                <h3 className="text-sm font-semibold text-gray-700">Recent Items</h3>
+                                                {recentItems.length > 12 && (
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => setShowRecentModal(true)}
+                                                        className="text-xs px-2 py-1"
                                                     >
-                                                        {/* Product Image */}
-                                                        <div className="relative mb-2">
-                                                            {item.images && item.images.length > 0 ? (
-                                                                <div className="w-full h-16 rounded border overflow-hidden bg-gray-50">
-                                                                    <img
-                                                                        src={item.images[0]}
-                                                                        alt={item.productName}
-                                                                        className="w-full h-full object-cover"
-                                                                        onError={(e) => {
-                                                                            const target = e.target as HTMLImageElement
-                                                                            target.style.display = 'none'
-                                                                            const parent = target.parentElement
-                                                                            if (parent) {
-                                                                                parent.innerHTML = '<div class="w-full h-full bg-gray-100 flex items-center justify-center"><span class="text-gray-400 text-xs">No Image</span></div>'
-                                                                            }
-                                                                            console.log(`❌ Image failed to load for ${item.productName}:`, item.images?.[0])
-                                                                        }}
-                                                                        onLoad={() => {
-                                                                            console.log(`✅ Image loaded for ${item.productName}:`, item.images?.[0])
-                                                                        }}
-                                                                    />
+                                                        More ({recentItems.length})
+                                                    </Button>
+                                                )}
+                                            </div>
+                                            {displayRecentItems.length === 0 ? (
+                                                <div className="text-center text-gray-500 text-xs py-4">
+                                                    No recent items
+                                                </div>
+                                            ) : (
+                                                <div className="grid grid-cols-4 gap-2">
+                                                    {displayRecentItems.map((item) => {
+                                                        const isInCart = isItemInCart(item.productId, item.size, item.color)
+                                                        const cartItem = cart.find(cartItem =>
+                                                            cartItem.productId === item.productId &&
+                                                            cartItem.size === item.size &&
+                                                            cartItem.color === item.color
+                                                        )
+                                                        return (
+                                                            <div
+                                                                key={item.id}
+                                                                onClick={() => handleRecentItemClick(item)}
+                                                                className={`border rounded p-2 cursor-pointer transition-colors ${isInCart
+                                                                    ? 'bg-blue-50 border-blue-300 hover:bg-blue-100'
+                                                                    : 'bg-white border-gray-200 hover:bg-blue-50 hover:border-blue-300'
+                                                                    }`}
+                                                            >
+                                                                {/* Product Image */}
+                                                                <div className="relative mb-2">
+                                                                    {item.images && item.images.length > 0 ? (
+                                                                        <div className="w-full h-16 rounded border overflow-hidden bg-gray-50">
+                                                                            <img
+                                                                                src={item.images[0]}
+                                                                                alt={item.productName}
+                                                                                className="w-full h-full object-cover"
+                                                                                onError={(e) => {
+                                                                                    const target = e.target as HTMLImageElement
+                                                                                    target.style.display = 'none'
+                                                                                    const parent = target.parentElement
+                                                                                    if (parent) {
+                                                                                        parent.innerHTML = '<div class="w-full h-full bg-gray-100 flex items-center justify-center"><span class="text-gray-400 text-xs">No Image</span></div>'
+                                                                                    }
+                                                                                    console.log(`❌ Image failed to load for ${item.productName}:`, item.images?.[0])
+                                                                                }}
+                                                                                onLoad={() => {
+                                                                                    console.log(`✅ Image loaded for ${item.productName}:`, item.images?.[0])
+                                                                                }}
+                                                                            />
+                                                                        </div>
+                                                                    ) : (
+                                                                        <div className="w-full h-16 bg-gray-100 rounded border flex items-center justify-center">
+                                                                            <span className="text-gray-400 text-xs">No Image</span>
+                                                                        </div>
+                                                                    )}
                                                                 </div>
-                                                            ) : (
-                                                                <div className="w-full h-16 bg-gray-100 rounded border flex items-center justify-center">
-                                                                    <span className="text-gray-400 text-xs">No Image</span>
+
+                                                                <div className="flex items-center justify-between text-[10px] font-semibold">
+                                                                    <span>₹{item.price}</span>
+                                                                    {isInCart && (
+                                                                        <span className="text-blue-600 text-xs">
+                                                                            Qty: {cartItem?.quantity || 1}
+                                                                        </span>
+                                                                    )}
                                                                 </div>
-                                                            )}
-                                                        </div>
-
-                                                        <div className="flex items-center justify-between text-[10px] font-semibold">
-                                                            <span>₹{item.price}</span>
-                                                            {isInCart && (
-                                                                <span className="text-blue-600 text-xs">
-                                                                    Qty: {cartItem?.quantity || 1}
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                        <div className="mt-1 text-xs font-medium text-gray-700 truncate">
-                                                            {item.productName}
-                                                        </div>
-                                                        {item.size && (
-                                                            <div className="text-[10px] text-gray-500">
-                                                                Size: {item.size}
+                                                                <div className="mt-1 text-xs font-medium text-gray-700 truncate">
+                                                                    {item.productName}
+                                                                </div>
+                                                                {item.size && (
+                                                                    <div className="text-[10px] text-gray-500">
+                                                                        Size: {item.size}
+                                                                    </div>
+                                                                )}
+                                                                {item.color && (
+                                                                    <div className="text-[10px] text-gray-500">
+                                                                        Color: {item.color}
+                                                                    </div>
+                                                                )}
                                                             </div>
-                                                        )}
-                                                        {item.color && (
-                                                            <div className="text-[10px] text-gray-500">
-                                                                Color: {item.color}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                )
-                                            })}
-                                        </div>
-                                    )}
-                                </CardContent>
-                            </Card>
+                                                        )
+                                                    })}
+                                                </div>
+                                            )}
+                                        </CardContent>
+                                    </Card>
 
 
-                        </div>
-                    </div>
+                                </div>
+                            </div>
 
-                    {/* Bottom payment summary */}
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-center text-xs">
-                        <div className="lg:col-span-7 grid grid-cols-7 gap-2">
-                            <div className="bg-yellow-100 border border-yellow-300 rounded p-2">
-                                <div className="text-[10px] text-gray-700">Extra/Less</div>
-                                <Input
-                                    className="h-7 text-right"
-                                    value={extraLessInput}
-                                    onChange={(e) => handleExtraLessChange(e.target.value)}
-                                    placeholder="0.00"
-                                />
+                            {/* Bottom payment summary */}
+                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-center text-xs">
+                                <div className="lg:col-span-7 grid grid-cols-7 gap-2">
+                                    <div className="bg-yellow-100 border border-yellow-300 rounded p-2">
+                                        <div className="text-[10px] text-gray-700">Extra/Less</div>
+                                        <Input
+                                            className="h-7 text-right"
+                                            value={extraLessInput}
+                                            onChange={(e) => handleExtraLessChange(e.target.value)}
+                                            placeholder="0.00"
+                                        />
+                                    </div>
+                                    <div className="bg-yellow-100 border border-yellow-300 rounded p-2">
+                                        <div className="text-[10px] text-gray-700">Savings</div>
+                                        <Input
+                                            className="h-7 text-right"
+                                            value={savingsInput}
+                                            onChange={(e) => handleSavingsChange(e.target.value)}
+                                            placeholder="0.00"
+                                        />
+                                    </div>
+                                    <div className="bg-yellow-100 border border-yellow-300 rounded p-2">
+                                        <div className="text-[10px] text-gray-700">Invoice Total</div>
+                                        <Input
+                                            className="h-7 text-right font-semibold"
+                                            value={invoiceTotal.toFixed(2)}
+                                            readOnly
+                                        />
+                                    </div>
+                                    <div className="bg-yellow-100 border border-yellow-300 rounded p-2">
+                                        <div className="text-[10px] text-gray-700">Cash</div>
+                                        <Input
+                                            className="h-7 text-right"
+                                            value={cashInput}
+                                            onChange={(e) => handlePaymentChange('cashAmount', e.target.value)}
+                                            placeholder="0.00"
+                                        />
+                                    </div>
+                                    <div className="bg-yellow-100 border border-yellow-300 rounded p-2">
+                                        <div className="text-[10px] text-gray-700">Card</div>
+                                        <Input
+                                            className="h-7 text-right"
+                                            value={cardInput}
+                                            onChange={(e) => handlePaymentChange('cardAmount', e.target.value)}
+                                            placeholder="0.00"
+                                        />
+                                    </div>
+                                    <div className="bg-yellow-100 border border-yellow-300 rounded p-2">
+                                        <div className="text-[10px] text-gray-700">UPI</div>
+                                        <Input
+                                            className="h-7 text-right"
+                                            value={upiInput}
+                                            onChange={(e) => handlePaymentChange('upiAmount', e.target.value)}
+                                            placeholder="0.00"
+                                        />
+                                    </div>
+                                    <div className="bg-yellow-100 border border-yellow-300 rounded p-2">
+                                        <div className="text-[10px] text-gray-700">Change Given</div>
+                                        <Input
+                                            className="h-7 text-right"
+                                            value={changeInput}
+                                            readOnly
+                                        />
+                                    </div>
+                                </div>
+                                <div className="lg:col-span-5 flex flex-wrap items-center justify-end gap-3">
+                                    <Button
+                                        className="h-8 bg-yellow-300 hover:bg-yellow-400 text-black text-xs px-4"
+                                        onClick={handleSaveInvoice}
+                                        disabled={loading || cart.length === 0}
+                                    >
+                                        {loading ? 'Saving...' : 'Save'}
+                                    </Button>
+                                    <Button
+                                        className="h-8 bg-yellow-300 hover:bg-yellow-400 text-black text-xs px-4"
+                                        onClick={handleSaveAndPrint}
+                                        disabled={loading || cart.length === 0}
+                                    >
+                                        Save & Print
+                                    </Button>
+                                    <Button
+                                        className="h-8 bg-yellow-300 hover:bg-yellow-400 text-black text-xs px-4"
+                                        onClick={handleGeneratePDF}
+                                        disabled={cart.length === 0}
+                                    >
+                                        PDF
+                                    </Button>
+                                    <Button
+                                        className="h-8 bg-yellow-300 hover:bg-yellow-400 text-black text-xs px-4"
+                                        onClick={handleHoldInvoice}
+                                        disabled={cart.length === 0}
+                                    >
+                                        Hold
+                                    </Button>
+                                    <Button
+                                        className="h-8 bg-yellow-300 hover:bg-yellow-400 text-black text-xs px-4"
+                                        onClick={handleViewAllHeld}
+                                    >
+                                        View({heldInvoices.length})
+                                    </Button>
+                                </div>
                             </div>
-                            <div className="bg-yellow-100 border border-yellow-300 rounded p-2">
-                                <div className="text-[10px] text-gray-700">Savings</div>
-                                <Input
-                                    className="h-7 text-right"
-                                    value={savingsInput}
-                                    onChange={(e) => handleSavingsChange(e.target.value)}
-                                    placeholder="0.00"
-                                />
-                            </div>
-                            <div className="bg-yellow-100 border border-yellow-300 rounded p-2">
-                                <div className="text-[10px] text-gray-700">Invoice Total</div>
-                                <Input
-                                    className="h-7 text-right font-semibold"
-                                    value={invoiceTotal.toFixed(2)}
-                                    readOnly
-                                />
-                            </div>
-                            <div className="bg-yellow-100 border border-yellow-300 rounded p-2">
-                                <div className="text-[10px] text-gray-700">Cash</div>
-                                <Input
-                                    className="h-7 text-right"
-                                    value={cashInput}
-                                    onChange={(e) => handlePaymentChange('cashAmount', e.target.value)}
-                                    placeholder="0.00"
-                                />
-                            </div>
-                            <div className="bg-yellow-100 border border-yellow-300 rounded p-2">
-                                <div className="text-[10px] text-gray-700">Card</div>
-                                <Input
-                                    className="h-7 text-right"
-                                    value={cardInput}
-                                    onChange={(e) => handlePaymentChange('cardAmount', e.target.value)}
-                                    placeholder="0.00"
-                                />
-                            </div>
-                            <div className="bg-yellow-100 border border-yellow-300 rounded p-2">
-                                <div className="text-[10px] text-gray-700">UPI</div>
-                                <Input
-                                    className="h-7 text-right"
-                                    value={upiInput}
-                                    onChange={(e) => handlePaymentChange('upiAmount', e.target.value)}
-                                    placeholder="0.00"
-                                />
-                            </div>
-                            <div className="bg-yellow-100 border border-yellow-300 rounded p-2">
-                                <div className="text-[10px] text-gray-700">Change Given</div>
-                                <Input
-                                    className="h-7 text-right"
-                                    value={changeInput}
-                                    readOnly
-                                />
-                            </div>
-                        </div>
-                        <div className="lg:col-span-5 flex flex-wrap items-center justify-end gap-3">
-                            <Button
-                                className="h-8 bg-yellow-300 hover:bg-yellow-400 text-black text-xs px-4"
-                                onClick={handleSaveInvoice}
-                                disabled={loading || cart.length === 0}
-                            >
-                                {loading ? 'Saving...' : 'Save'}
-                            </Button>
-                            <Button
-                                className="h-8 bg-yellow-300 hover:bg-yellow-400 text-black text-xs px-4"
-                                onClick={handleSaveAndPrint}
-                                disabled={loading || cart.length === 0}
-                            >
-                                Save & Print
-                            </Button>
-                            <Button
-                                className="h-8 bg-yellow-300 hover:bg-yellow-400 text-black text-xs px-4"
-                                onClick={handleGeneratePDF}
-                                disabled={cart.length === 0}
-                            >
-                                PDF
-                            </Button>
-                            <Button
-                                className="h-8 bg-yellow-300 hover:bg-yellow-400 text-black text-xs px-4"
-                                onClick={handleHoldInvoice}
-                                disabled={cart.length === 0}
-                            >
-                                Hold
-                            </Button>
-                            <Button
-                                className="h-8 bg-yellow-300 hover:bg-yellow-400 text-black text-xs px-4"
-                                onClick={handleViewAllHeld}
-                            >
-                                View({heldInvoices.length})
-                            </Button>
-                        </div>
-                    </div>
+                        </>
+                    )}
                 </div>
             </main>
 
