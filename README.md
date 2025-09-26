@@ -60,7 +60,7 @@ cp env.example .env
 
 The default API endpoint is already configured:
 ```
-NEXT_PUBLIC_API_BASE_URL=http://ecs-netware-view-lb-949622788.ap-south-1.elb.amazonaws.com
+NEXT_PUBLIC_API_BASE_URL=http://35.154.89.77:8000
 ```
 
 ### 3. Start Development Environment

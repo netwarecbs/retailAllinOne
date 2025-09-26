@@ -8,7 +8,7 @@ class ApiService {
   private baseURL: string;
 
   constructor() {
-    this.baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://ecs-netware-view-lb-949622788.ap-south-1.elb.amazonaws.com';
+    this.baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://35.154.89.77:8000';
 
     this.api = axios.create({
       baseURL: this.baseURL,
