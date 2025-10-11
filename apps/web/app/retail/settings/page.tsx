@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Card, CardContent, CardHeader, CardTitle, Button, Input } from '@retail/ui'
 import { useRouter } from 'next/navigation'
@@ -96,12 +96,76 @@ interface Branch {
     giMasCode: string
 }
 
+interface CustomerType {
+    id: string
+    name: string
+    description: string
+    isActive: boolean
+}
+
+interface MaterialRate {
+    materialId: string
+    customerTypeId: string
+    rate: number
+    startDate: string
+    endDate?: string
+    isActive: boolean
+}
+
+interface RateChartEntry {
+    id: string
+    materialCode: string
+    materialName: string
+    rates: MaterialRate[]
+    isActive: boolean
+}
+
 export default function SettingsPage() {
     const dispatch = useDispatch<AppDispatch>()
     const router = useRouter()
     const { products, vendors, customers } = useSelector((state: RootState) => state.products)
     const [activeTab, setActiveTab] = useState('shop')
     const [isLoading, setIsLoading] = useState(true)
+
+    // Rate Chart State
+    const [customerTypes, setCustomerTypes] = useState<CustomerType[]>([
+        { id: 'CT001', name: 'RUNNING/NONMEMBER', description: 'Running/Non-member customers', isActive: true },
+        { id: 'CT002', name: 'SOCIETY', description: 'Society customers', isActive: true },
+        { id: 'CT003', name: 'WHOLE SELLER', description: 'Wholesale customers', isActive: true },
+        { id: 'CT004', name: 'GOVT./SEMI GOVT.', description: 'Government and Semi-government', isActive: true },
+        { id: 'CT005', name: 'MEMBER', description: 'Member customers', isActive: true }
+    ])
+
+    const [rateChartEntries, setRateChartEntries] = useState<RateChartEntry[]>([
+        {
+            id: 'RC001',
+            materialCode: 'MM-1',
+            materialName: 'D.A.P (IFFCO)',
+            rates: [
+                { materialId: 'MM-1', customerTypeId: 'CT001', rate: 27.00, startDate: '11.06.2017', isActive: true },
+                { materialId: 'MM-1', customerTypeId: 'CT003', rate: 23.00, startDate: '01.06.2017', isActive: true },
+                { materialId: 'MM-1', customerTypeId: 'CT005', rate: 27.00, startDate: '09.10.2025', isActive: true }
+            ],
+            isActive: true
+        },
+        {
+            id: 'RC002',
+            materialCode: 'MM-10',
+            materialName: 'SHAKTI DANA',
+            rates: [],
+            isActive: true
+        },
+        {
+            id: 'RC003',
+            materialCode: 'MM-100',
+            materialName: 'YUJO (100ML)',
+            rates: [],
+            isActive: true
+        }
+    ])
+
+    const [editingRate, setEditingRate] = useState<{ materialId: string; customerTypeId: string } | null>(null)
+    const [newRate, setNewRate] = useState({ rate: 0, startDate: '' })
     const [shopSettings, setShopSettings] = useState<ShopSettings>({
         shopName: 'Retail Hub',
         address: '456 Retail Avenue',
@@ -394,6 +458,15 @@ export default function SettingsPage() {
                                         }`}
                                 >
                                     ⚙️ System
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('rate-chart')}
+                                    className={`px-4 py-3 text-sm font-medium border-b-2 whitespace-nowrap ${activeTab === 'rate-chart'
+                                        ? 'border-orange-500 text-orange-600'
+                                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                                        }`}
+                                >
+                                    📊 Sales Rate Chart
                                 </button>
                             </div>
 
@@ -697,6 +770,180 @@ export default function SettingsPage() {
                                                         <span className="ml-2 text-gray-600">1,247</span>
                                                     </div>
                                                 </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Sales Rate Chart Tab */}
+                                {activeTab === 'rate-chart' && (
+                                    <div className="space-y-6">
+                                        <div>
+                                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Sales Rate Chart</h3>
+                                            <p className="text-sm text-gray-600 mb-6">Manage pricing rates for different customer types and materials.</p>
+
+                                            {/* Rate Chart Table */}
+                                            <div className="overflow-x-auto">
+                                                <table className="min-w-full border border-gray-200 rounded-lg">
+                                                    <thead className="bg-blue-50">
+                                                        <tr>
+                                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider border-r">
+                                                                MATERIAL CODE
+                                                            </th>
+                                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider border-r">
+                                                                MATERIAL NAME
+                                                            </th>
+                                                            <th className="px-4 py-3 text-center text-xs font-medium text-gray-600 uppercase tracking-wider border-r" colSpan={customerTypes.length * 2}>
+                                                                CUSTOMER TYPE
+                                                            </th>
+                                                            <th className="px-4 py-3 text-center text-xs font-medium text-gray-600 uppercase tracking-wider">
+                                                                OPERATION
+                                                            </th>
+                                                        </tr>
+                                                        <tr className="bg-blue-100">
+                                                            <th className="px-4 py-2 text-xs font-medium text-gray-600 border-r"></th>
+                                                            <th className="px-4 py-2 text-xs font-medium text-gray-600 border-r"></th>
+                                                            {customerTypes.map((type) => (
+                                                                <React.Fragment key={type.id}>
+                                                                    <th className="px-2 py-2 text-xs font-medium text-gray-600 border-r">
+                                                                        {type.name}
+                                                                    </th>
+                                                                    <th className="px-2 py-2 text-xs font-medium text-gray-600 border-r">
+                                                                        START DATE
+                                                                    </th>
+                                                                </React.Fragment>
+                                                            ))}
+                                                            <th className="px-4 py-2 text-xs font-medium text-gray-600"></th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="bg-white divide-y divide-gray-200">
+                                                        {rateChartEntries.map((entry) => (
+                                                            <tr key={entry.id} className="hover:bg-gray-50">
+                                                                <td className="px-4 py-3 text-sm font-medium text-gray-900 border-r">
+                                                                    {entry.materialCode}
+                                                                </td>
+                                                                <td className="px-4 py-3 text-sm text-gray-900 border-r">
+                                                                    {entry.materialName}
+                                                                </td>
+                                                                {customerTypes.map((type) => {
+                                                                    const rate = entry.rates.find(r => r.customerTypeId === type.id)
+                                                                    return (
+                                                                        <React.Fragment key={type.id}>
+                                                                            <td className="px-2 py-3 text-sm text-gray-900 border-r">
+                                                                                {editingRate?.materialId === entry.id && editingRate?.customerTypeId === type.id ? (
+                                                                                    <div className="flex items-center space-x-1">
+                                                                                        <Input
+                                                                                            type="number"
+                                                                                            value={newRate.rate}
+                                                                                            onChange={(e) => setNewRate({ ...newRate, rate: parseFloat(e.target.value) || 0 })}
+                                                                                            className="w-16 text-xs"
+                                                                                            placeholder="0.00"
+                                                                                        />
+                                                                                        <Button
+                                                                                            size="sm"
+                                                                                            onClick={() => {
+                                                                                                const updatedEntries = rateChartEntries.map(e => {
+                                                                                                    if (e.id === entry.id) {
+                                                                                                        const updatedRates = e.rates.filter(r => r.customerTypeId !== type.id)
+                                                                                                        updatedRates.push({
+                                                                                                            materialId: entry.id,
+                                                                                                            customerTypeId: type.id,
+                                                                                                            rate: newRate.rate,
+                                                                                                            startDate: newRate.startDate,
+                                                                                                            isActive: true
+                                                                                                        })
+                                                                                                        return { ...e, rates: updatedRates }
+                                                                                                    }
+                                                                                                    return e
+                                                                                                })
+                                                                                                setRateChartEntries(updatedEntries)
+                                                                                                setEditingRate(null)
+                                                                                                setNewRate({ rate: 0, startDate: '' })
+                                                                                            }}
+                                                                                            className="bg-green-600 hover:bg-green-700 text-xs px-2 py-1"
+                                                                                        >
+                                                                                            ✓
+                                                                                        </Button>
+                                                                                        <Button
+                                                                                            size="sm"
+                                                                                            onClick={() => setEditingRate(null)}
+                                                                                            variant="outline"
+                                                                                            className="text-xs px-2 py-1"
+                                                                                        >
+                                                                                            ✕
+                                                                                        </Button>
+                                                                                    </div>
+                                                                                ) : (
+                                                                                    <div className="flex items-center justify-between">
+                                                                                        <span className="text-sm">
+                                                                                            {rate ? `₹ ${rate.rate.toFixed(2)}` : '₹ '}
+                                                                                        </span>
+                                                                                        <Button
+                                                                                            size="sm"
+                                                                                            onClick={() => {
+                                                                                                setEditingRate({ materialId: entry.id, customerTypeId: type.id })
+                                                                                                setNewRate({
+                                                                                                    rate: rate?.rate || 0,
+                                                                                                    startDate: rate?.startDate || new Date().toLocaleDateString('en-GB')
+                                                                                                })
+                                                                                            }}
+                                                                                            variant="outline"
+                                                                                            className="text-xs px-1 py-1 ml-1"
+                                                                                        >
+                                                                                            ✏️
+                                                                                        </Button>
+                                                                                    </div>
+                                                                                )}
+                                                                            </td>
+                                                                            <td className="px-2 py-3 text-sm text-gray-900 border-r">
+                                                                                {editingRate?.materialId === entry.id && editingRate?.customerTypeId === type.id ? (
+                                                                                    <Input
+                                                                                        type="date"
+                                                                                        value={newRate.startDate}
+                                                                                        onChange={(e) => setNewRate({ ...newRate, startDate: e.target.value })}
+                                                                                        className="w-24 text-xs"
+                                                                                    />
+                                                                                ) : (
+                                                                                    <span className="text-sm">
+                                                                                        {rate?.startDate || ''}
+                                                                                    </span>
+                                                                                )}
+                                                                            </td>
+                                                                        </React.Fragment>
+                                                                    )
+                                                                })}
+                                                                <td className="px-4 py-3 text-center">
+                                                                    <Button
+                                                                        size="sm"
+                                                                        variant="outline"
+                                                                        className="text-xs px-2 py-1"
+                                                                    >
+                                                                        ✏️
+                                                                    </Button>
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+
+                                            {/* Add New Material Button */}
+                                            <div className="mt-4">
+                                                <Button
+                                                    onClick={() => {
+                                                        const newEntry: RateChartEntry = {
+                                                            id: `RC${Date.now()}`,
+                                                            materialCode: `MM-${rateChartEntries.length + 1}`,
+                                                            materialName: 'New Material',
+                                                            rates: [],
+                                                            isActive: true
+                                                        }
+                                                        setRateChartEntries([...rateChartEntries, newEntry])
+                                                    }}
+                                                    className="bg-orange-600 hover:bg-orange-700"
+                                                >
+                                                    + Add New Material
+                                                </Button>
                                             </div>
                                         </div>
                                     </div>

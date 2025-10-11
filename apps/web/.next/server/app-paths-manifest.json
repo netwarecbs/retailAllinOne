@@ -1,8 +1,7 @@
 {
-  "/not-found": "app/not-found.js",
-  "/retail/page": "app/retail/page.js",
   "/retail/sales/page": "app/retail/sales/page.js",
   "/retail/reports/page": "app/retail/reports/page.js",
+  "/retail/inventory/page": "app/retail/inventory/page.js",
   "/retail/inventory/stock-in/page": "app/retail/inventory/stock-in/page.js",
-  "/retail/inventory/page": "app/retail/inventory/page.js"
+  "/retail/settings/page": "app/retail/settings/page.js"
 }

@@ -51,10 +51,10 @@
       "static/chunks/main-app.js",
       "static/chunks/app/retail/inventory/stock-in/page.js"
     ],
-    "/not-found": [
+    "/retail/settings/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/not-found.js"
+      "static/chunks/app/retail/settings/page.js"
     ]
   }
 }
