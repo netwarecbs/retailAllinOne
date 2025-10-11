@@ -61,6 +61,26 @@ services:
     networks:
       - retail-network
 
+  retail:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: retail-shop
+    ports:
+      - "3003:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/apps/retail/node_modules
+    environment:
+      - NODE_ENV=development
+      - NEXT_TELEMETRY_DISABLED=1
+    working_dir: /app/apps/retail
+    command: sh -c "cd /app && npm run build:packages && cd apps/retail && npm run dev"
+    networks:
+      - retail-network
+
 networks:
   retail-network:
     driver: bridge

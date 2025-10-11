@@ -36,10 +36,11 @@ export interface AuthState {
     error: string | null;
     authz: Authorization | null;
 }
-export type TileKey = 'garment' | 'pharmacy';
+export type TileKey = 'garment' | 'pharmacy' | 'retail';
 export type GarmentPageKey = 'dashboard' | 'purchase' | 'inventory' | 'sales' | 'pos';
 export type PharmacyPageKey = 'dashboard';
-export type PageKey = GarmentPageKey | PharmacyPageKey;
+export type RetailPageKey = 'dashboard' | 'inventory' | 'sales' | 'customers' | 'reports' | 'pos';
+export type PageKey = GarmentPageKey | PharmacyPageKey | RetailPageKey;
 export interface AuthorizationActionMap {
     [actionKey: string]: boolean;
 }

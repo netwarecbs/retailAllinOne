@@ -1,0 +1,99 @@
+export interface RetailCustomer {
+    id: string;
+    name: string;
+    contact: string;
+    email?: string;
+    type: 'Regular' | 'Wholesale' | 'VIP';
+    address?: string;
+    city?: string;
+    state?: string;
+    pincode?: string;
+    creditLimit?: number;
+    outstandingAmount: number;
+    totalPurchases: number;
+    lastPurchaseDate?: string;
+    isActive: boolean;
+}
+
+export const retailCustomers: RetailCustomer[] = [
+    {
+        id: "CUST001",
+        name: "Rahul Sharma",
+        contact: "9898989898",
+        email: "rahul.sharma@email.com",
+        type: "Regular",
+        address: "123 Main Street",
+        city: "Mumbai",
+        state: "Maharashtra",
+        pincode: "400001",
+        creditLimit: 5000,
+        outstandingAmount: 1200,
+        totalPurchases: 15000,
+        lastPurchaseDate: "2024-01-15",
+        isActive: true
+    },
+    {
+        id: "CUST002",
+        name: "Priya's Kirana",
+        contact: "9876123456",
+        email: "priya@kirana.com",
+        type: "Wholesale",
+        address: "456 Market Road",
+        city: "Pune",
+        state: "Maharashtra",
+        pincode: "411001",
+        creditLimit: 50000,
+        outstandingAmount: 8500,
+        totalPurchases: 125000,
+        lastPurchaseDate: "2024-01-20",
+        isActive: true
+    },
+    {
+        id: "CUST003",
+        name: "Amit Kumar",
+        contact: "9876543210",
+        email: "amit.kumar@email.com",
+        type: "Regular",
+        address: "789 Residential Area",
+        city: "Delhi",
+        state: "Delhi",
+        pincode: "110001",
+        creditLimit: 3000,
+        outstandingAmount: 0,
+        totalPurchases: 8500,
+        lastPurchaseDate: "2024-01-18",
+        isActive: true
+    },
+    {
+        id: "CUST004",
+        name: "Suresh Enterprises",
+        contact: "9123456789",
+        email: "suresh@enterprises.com",
+        type: "Wholesale",
+        address: "321 Business District",
+        city: "Bangalore",
+        state: "Karnataka",
+        pincode: "560001",
+        creditLimit: 100000,
+        outstandingAmount: 25000,
+        totalPurchases: 300000,
+        lastPurchaseDate: "2024-01-10",
+        isActive: true
+    },
+    {
+        id: "CUST005",
+        name: "Meera Patel",
+        contact: "9988776655",
+        email: "meera.patel@email.com",
+        type: "VIP",
+        address: "654 VIP Colony",
+        city: "Ahmedabad",
+        state: "Gujarat",
+        pincode: "380001",
+        creditLimit: 10000,
+        outstandingAmount: 0,
+        totalPurchases: 45000,
+        lastPurchaseDate: "2024-01-22",
+        isActive: true
+    }
+];

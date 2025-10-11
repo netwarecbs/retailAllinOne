@@ -1,0 +1,3 @@
+[submodule "apps/retail"]
+	path = apps/retail
+	url = git@github.com:netwarecbs/retail.git

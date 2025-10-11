@@ -91,7 +91,7 @@ export default function DashboardPage() {
               </div>
 
               {/* Application Cards skeleton */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {/* Garment Management Card skeleton */}
                 <Card className="hover:shadow-lg transition-shadow duration-200">
                   <CardHeader>
@@ -118,6 +118,21 @@ export default function DashboardPage() {
                   <CardContent>
                     <Skeleton className="h-4 w-full mb-2" />
                     <Skeleton className="h-4 w-5/6 mb-4" />
+                    <Skeleton className="h-10 w-full rounded" />
+                  </CardContent>
+                </Card>
+
+                {/* Retail Shop Management Card skeleton */}
+                <Card className="hover:shadow-lg transition-shadow duration-200">
+                  <CardHeader>
+                    <div className="flex items-center space-x-3">
+                      <Skeleton className="w-10 h-10 rounded-lg" />
+                      <Skeleton className="h-6 w-32" />
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <Skeleton className="h-4 w-full mb-2" />
+                    <Skeleton className="h-4 w-4/5 mb-4" />
                     <Skeleton className="h-10 w-full rounded" />
                   </CardContent>
                 </Card>
@@ -176,7 +191,7 @@ export default function DashboardPage() {
               </div>
 
               {/* Application Cards with RBAC */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <TileGuard tile="garment" fallback={<NotAuthorized message="You don't have access to Garment Management" />}>
                   <Card className="hover:shadow-lg transition-shadow duration-200 cursor-pointer">
                     <CardHeader>
@@ -227,6 +242,34 @@ export default function DashboardPage() {
                           className="flex-1 bg-green-600 hover:bg-green-700"
                         >
                           Open Pharmacy App
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TileGuard>
+
+                <TileGuard tile="retail" fallback={<NotAuthorized message="You don't have access to Retail Shop Management" />}>
+                  <Card className="hover:shadow-lg transition-shadow duration-200 cursor-pointer">
+                    <CardHeader>
+                      <CardTitle className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                          <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                          </svg>
+                        </div>
+                        <span>Retail Shop</span>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-gray-600 mb-4">
+                        Comprehensive retail shop management with inventory, sales, and customer tracking.
+                      </p>
+                      <div className="flex space-x-2">
+                        <Button
+                          onClick={() => handleAppNavigation('/retail')}
+                          className="flex-1 bg-orange-600 hover:bg-orange-700"
+                        >
+                          Open Retail Shop
                         </Button>
                       </div>
                     </CardContent>

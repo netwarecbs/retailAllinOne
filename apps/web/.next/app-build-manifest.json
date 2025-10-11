@@ -1,55 +1,55 @@
 {
   "pages": {
-    "/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/page.js"
-    ],
     "/layout": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
+    "/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/page.js"
+    ],
     "/dashboard/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/dashboard/page.js"
     ],
-    "/garment/page": [
+    "/retail/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/garment/page.js"
+      "static/chunks/app/retail/page.js"
     ],
-    "/garment/layout": [
+    "/retail/layout": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/garment/layout.js"
+      "static/chunks/app/retail/layout.js"
     ],
-    "/garment/inventory/page": [
+    "/retail/sales/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/garment/inventory/page.js"
+      "static/chunks/app/retail/sales/page.js"
     ],
-    "/garment/sales/page": [
+    "/retail/customers/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/garment/sales/page.js"
+      "static/chunks/app/retail/customers/page.js"
     ],
-    "/garment/purchase/page": [
+    "/retail/reports/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/garment/purchase/page.js"
+      "static/chunks/app/retail/reports/page.js"
     ],
-    "/garment/pos/page": [
+    "/retail/inventory/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/garment/pos/page.js"
+      "static/chunks/app/retail/inventory/page.js"
     ],
-    "/login/page": [
+    "/retail/inventory/stock-in/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/login/page.js"
+      "static/chunks/app/retail/inventory/stock-in/page.js"
     ],
     "/not-found": [
       "static/chunks/webpack.js",

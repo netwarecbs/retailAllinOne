@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux'
 import { RootState, authzUtils } from '@retail/shared'
 
 interface TileGuardProps {
-    tile: 'garment' | 'pharmacy'
+    tile: 'garment' | 'pharmacy' | 'retail'
     children: React.ReactNode
     fallback?: React.ReactNode
 }
@@ -17,7 +17,7 @@ export function TileGuard({ tile, children, fallback = null }: TileGuardProps) {
 }
 
 interface PageGuardProps {
-    tile: 'garment' | 'pharmacy'
+    tile: 'garment' | 'pharmacy' | 'retail'
     page: string
     children: React.ReactNode
     fallback?: React.ReactNode
@@ -30,7 +30,7 @@ export function PageGuard({ tile, page, children, fallback = null }: PageGuardPr
 }
 
 interface ActionGateProps {
-    tile: 'garment' | 'pharmacy'
+    tile: 'garment' | 'pharmacy' | 'retail'
     page: string
     action: string
     children: React.ReactNode

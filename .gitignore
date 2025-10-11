@@ -15,6 +15,9 @@ apps/garment/dist/
 apps/pharmacy/node_modules/
 apps/pharmacy/.next/
 apps/pharmacy/dist/
+apps/retail/node_modules/
+apps/retail/.next/
+apps/retail/dist/
 
 # Environment variables
 .env

@@ -11,8 +11,8 @@ export type { RootState, AppDispatch } from './store';
 export { default as authReducer } from './store/authSlice';
 export { loginUser, logoutUser, fetchUserProfile, clearError, setUser, setTokens } from './store/authSlice';
 export { default as productReducer } from './store/productSlice';
-export type { ProductState } from './store/productSlice';
-export { fetchProducts, fetchProductById, searchProductsByBarcode, clearProducts, setSelectedProduct, setSearchParams, clearError as clearProductError } from './store/productSlice';
+export type { ProductState, Product, StockInRecord, StockInProduct, Vendor, Customer } from './store/productSlice';
+export { setLoading, setError, addProduct, updateProduct, deleteProduct, updateStock, addStockInRecord, setSelectedVendor, addVendor, updateVendor, deleteVendor, addCustomer, updateCustomer, deleteCustomer } from './store/productSlice';
 export { default as salesReducer } from './store/salesSlice';
 export type { SalesState } from './store/salesSlice';
 export { createSale, searchCustomers, addToCart, updateCartItem, removeFromCart, clearCart, setCustomer, updatePaymentDetails, setDiscount, setExtraLess, setSavings, updatePaymentAmount, holdInvoice, loadHeldInvoice, removeHeldInvoice, setInvoiceNumber, clearError as clearSalesError } from './store/salesSlice';
@@ -22,3 +22,6 @@ export { fetchPurchaseOrders, createPurchaseOrder, fetchSuppliers, createSupplie
 export type { Authorization, AuthorizationTile, AuthorizationPage, AuthorizationActionMap, TileKey, PageKey } from './types/auth';
 export { sampleProducts, sampleCategories } from './data/sampleProducts';
 export { sampleCustomers } from './data/sampleCustomers';
+export { retailProducts, categories, brands } from './data/retailProducts';
+export { retailSuppliers } from './data/retailSuppliers';
+export { retailCustomers } from './data/retailCustomers';

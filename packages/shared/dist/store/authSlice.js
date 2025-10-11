@@ -63,6 +63,17 @@ export const loginUser = createAsyncThunk('auth/login', async (credentials, { re
                             pages: {
                                 dashboard: { allowed: true, actions: { addMedicine: true, viewPrescriptions: true, viewExpiring: true, viewRevenue: true } }
                             }
+                        },
+                        retail: {
+                            allowed: true,
+                            pages: {
+                                dashboard: { allowed: true, actions: { viewSales: true, viewInventory: true, viewCustomers: true, viewOrders: true } },
+                                inventory: { allowed: true, actions: { create: true, update: true, delete: true, export: true, print: true, generateBarcode: true, manageCategories: true, manageBrands: true, stockAdjustment: true, lowStockAlert: true } },
+                                sales: { allowed: true, actions: { create: true, update: true, delete: true, save: true, print: true, pdf: true, hold: true, view: true, refund: true, exchange: true } },
+                                customers: { allowed: true, actions: { create: true, update: true, delete: true, view: true, export: true, import: true, manageLoyalty: true, viewHistory: true } },
+                                reports: { allowed: true, actions: { viewSales: true, viewInventory: true, viewCustomers: true, viewProfit: true, export: true, print: true, schedule: true, custom: true } },
+                                pos: { allowed: true, actions: { create: true, save: true, print: true, pdf: true, hold: true, view: true, refund: true, exchange: true, discount: true, tax: true } }
+                            }
                         }
                     }
                 };

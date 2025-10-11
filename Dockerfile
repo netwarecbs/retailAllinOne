@@ -10,12 +10,13 @@ WORKDIR /app
 COPY package.json ./
 
 # Create directories for apps and packages
-RUN mkdir -p apps/web apps/garment apps/pharmacy packages/shared packages/ui
+RUN mkdir -p apps/web apps/garment apps/pharmacy apps/retail packages/shared packages/ui
 
 # Copy package.json files
 COPY apps/web/package.json ./apps/web/
 COPY apps/garment/package.json ./apps/garment/
 COPY apps/pharmacy/package.json ./apps/pharmacy/
+COPY apps/retail/package.json ./apps/retail/
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/ui/package.json ./packages/ui/
 
@@ -44,6 +45,7 @@ RUN adduser --system --uid 1001 nextjs
 COPY --from=builder /app/apps/web/public ./apps/web/public
 COPY --from=builder /app/apps/garment/public ./apps/garment/public
 COPY --from=builder /app/apps/pharmacy/public ./apps/pharmacy/public
+COPY --from=builder /app/apps/retail/public ./apps/retail/public
 
 # Set the correct permission for prerender cache
 RUN mkdir .next
@@ -70,12 +72,13 @@ WORKDIR /app
 COPY package.json ./
 
 # Create directories for apps and packages
-RUN mkdir -p apps/web apps/garment apps/pharmacy packages/shared packages/ui
+RUN mkdir -p apps/web apps/garment apps/pharmacy apps/retail packages/shared packages/ui
 
 # Copy package.json files
 COPY apps/web/package.json ./apps/web/
 COPY apps/garment/package.json ./apps/garment/
 COPY apps/pharmacy/package.json ./apps/pharmacy/
+COPY apps/retail/package.json ./apps/retail/
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/ui/package.json ./packages/ui/
 
