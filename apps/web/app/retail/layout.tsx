@@ -7,6 +7,7 @@ import { Button } from '@retail/ui'
 import { RootState, AppDispatch, logoutUser } from '@retail/shared'
 import AuthGuard from '../../components/AuthGuard'
 import { TileGuard, PageGuard, NotAuthorized } from '../../components/RBAC'
+import { TourButton } from './components/TourButton'
 
 export default function RetailLayout({ children }: { children: React.ReactNode }) {
     const router = useRouter()
@@ -21,6 +22,16 @@ export default function RetailLayout({ children }: { children: React.ReactNode }
 
     const handleBackToDashboard = () => {
         router.push('/dashboard')
+    }
+
+    // Determine current section for tour
+    const getCurrentSection = () => {
+        if (pathname === '/retail' || pathname === '/retail/') return 'dashboard'
+        if (pathname?.startsWith('/retail/inventory')) return 'inventory'
+        if (pathname?.startsWith('/retail/sales')) return 'sales'
+        if (pathname?.startsWith('/retail/settings')) return 'settings'
+        if (pathname?.startsWith('/retail/reports')) return 'reports'
+        return 'dashboard'
     }
 
     return (
@@ -42,6 +53,12 @@ export default function RetailLayout({ children }: { children: React.ReactNode }
 
                                 <div className="flex items-center space-x-4">
                                     <Button variant="outline" onClick={handleBackToDashboard} className="text-sm">Back to Dashboard</Button>
+                                    <TourButton
+                                        sectionId={getCurrentSection()}
+                                        className="text-sm"
+                                        size="sm"
+                                        variant="outline"
+                                    />
                                     <span className="text-sm text-gray-700">Welcome, {user?.name || 'User'}</span>
                                     <Button variant="outline" onClick={handleLogout} className="text-sm">Logout</Button>
                                     <span className="hidden md:inline-block h-5 w-px bg-gray-300" />
@@ -170,6 +187,12 @@ export default function RetailLayout({ children }: { children: React.ReactNode }
                                                     className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                                                 >
                                                     ❓ Help & Support
+                                                </button>
+                                                <button
+                                                    onClick={() => router.push('/retail/tour')}
+                                                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                                >
+                                                    🎯 Tour & Guide
                                                 </button>
                                             </div>
                                         </div>

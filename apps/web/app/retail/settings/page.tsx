@@ -166,6 +166,44 @@ export default function SettingsPage() {
 
     const [editingRate, setEditingRate] = useState<{ materialId: string; customerTypeId: string } | null>(null)
     const [newRate, setNewRate] = useState({ rate: 0, startDate: '' })
+
+    // Edit functionality
+    const [editingEntry, setEditingEntry] = useState<RateChartEntry | null>(null)
+    const [editingRateIndex, setEditingRateIndex] = useState<number | null>(null)
+    const [editForm, setEditForm] = useState({
+        materialId: '',
+        materialName: '',
+        materialCode: '',
+        customerTypeId: '',
+        customerTypeName: '',
+        rate: 0,
+        startDate: '',
+        endDate: '',
+        notes: ''
+    })
+
+    // Form and Grid State
+    const [showRateForm, setShowRateForm] = useState(false)
+    const [rateForm, setRateForm] = useState({
+        materialId: '',
+        materialName: '',
+        materialCode: '',
+        customerTypeId: '',
+        customerTypeName: '',
+        rate: 0,
+        startDate: '',
+        endDate: '',
+        notes: ''
+    })
+
+    // Search and Pagination for Rate Chart
+    const [rateSearchTerm, setRateSearchTerm] = useState('')
+    const [rateCurrentPage, setRateCurrentPage] = useState(1)
+    const [rateItemsPerPage] = useState(10)
+    const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
+
+    // Rate History
+    const [rateHistory, setRateHistory] = useState<{ [key: string]: any[] }>({})
     const [shopSettings, setShopSettings] = useState<ShopSettings>({
         shopName: 'Retail Hub',
         address: '456 Retail Avenue',
@@ -350,6 +388,292 @@ export default function SettingsPage() {
             alert('Item deleted successfully!')
         }
     }
+
+    // Rate Chart Handlers
+    const handleMaterialSelect = (material: any) => {
+        setRateForm({
+            ...rateForm,
+            materialId: material.sku,
+            materialName: material.name,
+            materialCode: material.sku
+        })
+    }
+
+    const handleCustomerTypeSelect = (customerType: CustomerType) => {
+        setRateForm({
+            ...rateForm,
+            customerTypeId: customerType.id,
+            customerTypeName: customerType.name
+        })
+    }
+
+    const handleAddRate = () => {
+        if (!rateForm.materialId || !rateForm.customerTypeId || !rateForm.rate || !rateForm.startDate) {
+            alert('Please fill all required fields')
+            return
+        }
+
+        // Add to rate chart entries
+        const existingEntry = rateChartEntries.find(entry => entry.materialCode === rateForm.materialCode)
+
+        if (existingEntry) {
+            // Update existing entry
+            const updatedEntries = rateChartEntries.map(entry => {
+                if (entry.id === existingEntry.id) {
+                    const updatedRates = entry.rates.filter(r => r.customerTypeId !== rateForm.customerTypeId)
+                    updatedRates.push({
+                        materialId: rateForm.materialId,
+                        customerTypeId: rateForm.customerTypeId,
+                        rate: rateForm.rate,
+                        startDate: rateForm.startDate,
+                        endDate: rateForm.endDate || undefined,
+                        isActive: true
+                    })
+                    return { ...entry, rates: updatedRates }
+                }
+                return entry
+            })
+            setRateChartEntries(updatedEntries)
+        } else {
+            // Create new entry
+            const newEntry: RateChartEntry = {
+                id: `RC${Date.now()}`,
+                materialCode: rateForm.materialCode,
+                materialName: rateForm.materialName,
+                rates: [{
+                    materialId: rateForm.materialId,
+                    customerTypeId: rateForm.customerTypeId,
+                    rate: rateForm.rate,
+                    startDate: rateForm.startDate,
+                    endDate: rateForm.endDate || undefined,
+                    isActive: true
+                }],
+                isActive: true
+            }
+            setRateChartEntries([...rateChartEntries, newEntry])
+        }
+
+        // Add to history
+        const historyKey = `${rateForm.materialCode}-${rateForm.customerTypeId}`
+        const historyEntry = {
+            id: Date.now(),
+            materialName: rateForm.materialName,
+            customerTypeName: rateForm.customerTypeName,
+            rate: rateForm.rate,
+            startDate: rateForm.startDate,
+            endDate: rateForm.endDate,
+            notes: rateForm.notes,
+            timestamp: new Date().toLocaleString(),
+            action: 'Added'
+        }
+
+        setRateHistory(prev => ({
+            ...prev,
+            [historyKey]: [...(prev[historyKey] || []), historyEntry]
+        }))
+
+        // Reset form
+        setRateForm({
+            materialId: '',
+            materialName: '',
+            materialCode: '',
+            customerTypeId: '',
+            customerTypeName: '',
+            rate: 0,
+            startDate: '',
+            endDate: '',
+            notes: ''
+        })
+        setShowRateForm(false)
+    }
+
+    const toggleRowExpansion = (entryId: string) => {
+        const newExpanded = new Set(expandedRows)
+        if (newExpanded.has(entryId)) {
+            newExpanded.delete(entryId)
+        } else {
+            newExpanded.add(entryId)
+        }
+        setExpandedRows(newExpanded)
+    }
+
+    // Edit handlers
+    const handleEditEntry = (entry: RateChartEntry) => {
+        setEditingEntry(entry)
+        setEditForm({
+            materialId: entry.materialCode,
+            materialName: entry.materialName,
+            materialCode: entry.materialCode,
+            customerTypeId: '',
+            customerTypeName: '',
+            rate: 0,
+            startDate: '',
+            endDate: '',
+            notes: ''
+        })
+        setShowRateForm(true)
+    }
+
+    const handleEditRate = (entry: RateChartEntry, rateIndex: number) => {
+        const rate = entry.rates[rateIndex]
+        const customerType = customerTypes.find(ct => ct.id === rate.customerTypeId)
+
+        setEditingEntry(entry)
+        setEditingRateIndex(rateIndex)
+        setEditForm({
+            materialId: entry.materialCode,
+            materialName: entry.materialName,
+            materialCode: entry.materialCode,
+            customerTypeId: rate.customerTypeId,
+            customerTypeName: customerType?.name || '',
+            rate: rate.rate,
+            startDate: rate.startDate,
+            endDate: rate.endDate || '',
+            notes: ''
+        })
+        setShowRateForm(true)
+    }
+
+    const handleUpdateRate = () => {
+        if (!editForm.materialId || !editForm.customerTypeId || !editForm.rate || !editForm.startDate) {
+            alert('Please fill all required fields')
+            return
+        }
+
+        if (editingEntry && editingRateIndex !== null) {
+            // Update existing rate
+            const updatedEntries = rateChartEntries.map(entry => {
+                if (entry.id === editingEntry.id) {
+                    const updatedRates = [...entry.rates]
+                    updatedRates[editingRateIndex] = {
+                        materialId: editForm.materialId,
+                        customerTypeId: editForm.customerTypeId,
+                        rate: editForm.rate,
+                        startDate: editForm.startDate,
+                        endDate: editForm.endDate || undefined,
+                        isActive: true
+                    }
+                    return { ...entry, rates: updatedRates }
+                }
+                return entry
+            })
+            setRateChartEntries(updatedEntries)
+
+            // Add to history
+            const historyKey = `${editForm.materialId}-${editForm.customerTypeId}`
+            const historyEntry = {
+                id: Date.now(),
+                materialName: editForm.materialName,
+                customerTypeName: editForm.customerTypeName,
+                rate: editForm.rate,
+                startDate: editForm.startDate,
+                endDate: editForm.endDate,
+                notes: editForm.notes,
+                timestamp: new Date().toLocaleString(),
+                action: 'Updated'
+            }
+
+            setRateHistory(prev => ({
+                ...prev,
+                [historyKey]: [...(prev[historyKey] || []), historyEntry]
+            }))
+        } else if (editingEntry) {
+            // Add new rate to existing entry
+            const updatedEntries = rateChartEntries.map(entry => {
+                if (entry.id === editingEntry.id) {
+                    const updatedRates = entry.rates.filter(r => r.customerTypeId !== editForm.customerTypeId)
+                    updatedRates.push({
+                        materialId: editForm.materialId,
+                        customerTypeId: editForm.customerTypeId,
+                        rate: editForm.rate,
+                        startDate: editForm.startDate,
+                        endDate: editForm.endDate || undefined,
+                        isActive: true
+                    })
+                    return { ...entry, rates: updatedRates }
+                }
+                return entry
+            })
+            setRateChartEntries(updatedEntries)
+
+            // Add to history
+            const historyKey = `${editForm.materialId}-${editForm.customerTypeId}`
+            const historyEntry = {
+                id: Date.now(),
+                materialName: editForm.materialName,
+                customerTypeName: editForm.customerTypeName,
+                rate: editForm.rate,
+                startDate: editForm.startDate,
+                endDate: editForm.endDate,
+                notes: editForm.notes,
+                timestamp: new Date().toLocaleString(),
+                action: 'Added'
+            }
+
+            setRateHistory(prev => ({
+                ...prev,
+                [historyKey]: [...(prev[historyKey] || []), historyEntry]
+            }))
+        }
+
+        // Reset edit state
+        setEditingEntry(null)
+        setEditingRateIndex(null)
+        setEditForm({
+            materialId: '',
+            materialName: '',
+            materialCode: '',
+            customerTypeId: '',
+            customerTypeName: '',
+            rate: 0,
+            startDate: '',
+            endDate: '',
+            notes: ''
+        })
+        setShowRateForm(false)
+    }
+
+    const handleCancelEdit = () => {
+        setEditingEntry(null)
+        setEditingRateIndex(null)
+        setEditForm({
+            materialId: '',
+            materialName: '',
+            materialCode: '',
+            customerTypeId: '',
+            customerTypeName: '',
+            rate: 0,
+            startDate: '',
+            endDate: '',
+            notes: ''
+        })
+        setShowRateForm(false)
+    }
+
+    const handleDeleteRate = (entryId: string, rateIndex: number) => {
+        if (confirm('Are you sure you want to delete this rate?')) {
+            const updatedEntries = rateChartEntries.map(entry => {
+                if (entry.id === entryId) {
+                    const updatedRates = entry.rates.filter((_, index) => index !== rateIndex)
+                    return { ...entry, rates: updatedRates }
+                }
+                return entry
+            })
+            setRateChartEntries(updatedEntries)
+        }
+    }
+
+    // Filtered and paginated data
+    const filteredRateEntries = rateChartEntries.filter(entry =>
+        entry.materialName.toLowerCase().includes(rateSearchTerm.toLowerCase()) ||
+        entry.materialCode.toLowerCase().includes(rateSearchTerm.toLowerCase())
+    )
+
+    const rateTotalPages = Math.ceil(filteredRateEntries.length / rateItemsPerPage)
+    const paginatedRateEntries = filteredRateEntries.slice(
+        (rateCurrentPage - 1) * rateItemsPerPage,
+        rateCurrentPage * rateItemsPerPage
+    )
 
     if (isLoading) {
         return (
@@ -779,172 +1103,415 @@ export default function SettingsPage() {
                                 {activeTab === 'rate-chart' && (
                                     <div className="space-y-6">
                                         <div>
-                                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Sales Rate Chart</h3>
-                                            <p className="text-sm text-gray-600 mb-6">Manage pricing rates for different customer types and materials.</p>
+                                            <div className="flex items-center justify-between mb-6">
+                                                <div>
+                                                    <h3 className="text-lg font-semibold text-gray-900">Sales Rate Chart</h3>
+                                                    <p className="text-sm text-gray-600">Manage pricing rates for different customer types and materials.</p>
+                                                </div>
+                                                <Button
+                                                    onClick={() => setShowRateForm(!showRateForm)}
+                                                    className="bg-orange-600 hover:bg-orange-700"
+                                                >
+                                                    {showRateForm ? 'Hide Form' : 'Add New Rate'}
+                                                </Button>
+                                            </div>
 
-                                            {/* Rate Chart Table */}
+                                            {/* Rate Entry Form */}
+                                            {showRateForm && (
+                                                <Card className="mb-6">
+                                                    <CardHeader>
+                                                        <CardTitle className='text-lg'>
+                                                            {editingEntry ? 'Edit Rate' : 'Add New Rate'}
+                                                        </CardTitle>
+                                                    </CardHeader>
+                                                    <CardContent>
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                            {/* Material Selection */}
+                                                            <div>
+                                                                <label className="block text-sm font-medium text-gray-700 mb-1">Material *</label>
+                                                                <div className="relative">
+                                                                    <Input
+                                                                        placeholder="Search material by name or SKU..."
+                                                                        value={editingEntry ? editForm.materialName : rateForm.materialName}
+                                                                        onChange={(e) => {
+                                                                            const searchTerm = e.target.value
+                                                                            if (editingEntry) {
+                                                                                setEditForm({ ...editForm, materialName: searchTerm })
+                                                                            } else {
+                                                                                setRateForm({ ...rateForm, materialName: searchTerm })
+                                                                            }
+                                                                        }}
+                                                                        disabled={editingEntry && editingRateIndex !== null ? true : false}
+                                                                        className="w-full"
+                                                                    />
+                                                                    {(editingEntry ? editForm.materialName : rateForm.materialName) && !editingEntry && (
+                                                                        <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-40 overflow-y-auto mt-1">
+                                                                            {products.filter(p =>
+                                                                                p.name.toLowerCase().includes((editingEntry ? editForm.materialName : rateForm.materialName).toLowerCase()) ||
+                                                                                p.sku.toLowerCase().includes((editingEntry ? editForm.materialName : rateForm.materialName).toLowerCase())
+                                                                            ).slice(0, 5).map((product) => (
+                                                                                <div
+                                                                                    key={product.sku}
+                                                                                    className="px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm border-b flex items-center space-x-3"
+                                                                                    onClick={() => {
+                                                                                        if (editingEntry) {
+                                                                                            setEditForm({
+                                                                                                ...editForm,
+                                                                                                materialId: product.sku,
+                                                                                                materialName: product.name,
+                                                                                                materialCode: product.sku
+                                                                                            })
+                                                                                        } else {
+                                                                                            handleMaterialSelect(product)
+                                                                                        }
+                                                                                    }}
+                                                                                >
+                                                                                    <div className="w-8 h-8 rounded overflow-hidden bg-gray-100 flex-shrink-0">
+                                                                                        {product.image ? (
+                                                                                            <img
+                                                                                                src={product.image}
+                                                                                                alt={product.name}
+                                                                                                className="w-full h-full object-cover"
+                                                                                            />
+                                                                                        ) : (
+                                                                                            <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">
+                                                                                                📦
+                                                                                            </div>
+                                                                                        )}
+                                                                                    </div>
+                                                                                    <div className="flex-1 min-w-0">
+                                                                                        <div className="font-medium truncate">{product.name}</div>
+                                                                                        <div className="text-xs text-gray-500">SKU: {product.sku} | Stock: {product.stock}</div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            ))}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Customer Type Selection */}
+                                                            <div>
+                                                                <label className="block text-sm font-medium text-gray-700 mb-1">Customer Type *</label>
+                                                                <select
+                                                                    value={editingEntry ? editForm.customerTypeId : rateForm.customerTypeId}
+                                                                    onChange={(e) => {
+                                                                        const selectedType = customerTypes.find(ct => ct.id === e.target.value)
+                                                                        if (selectedType) {
+                                                                            if (editingEntry) {
+                                                                                setEditForm({
+                                                                                    ...editForm,
+                                                                                    customerTypeId: selectedType.id,
+                                                                                    customerTypeName: selectedType.name
+                                                                                })
+                                                                            } else {
+                                                                                handleCustomerTypeSelect(selectedType)
+                                                                            }
+                                                                        }
+                                                                    }}
+                                                                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                                                >
+                                                                    <option value="">Select Customer Type</option>
+                                                                    {customerTypes.map((type) => (
+                                                                        <option key={type.id} value={type.id}>{type.name}</option>
+                                                                    ))}
+                                                                </select>
+                                                            </div>
+
+                                                            {/* Rate */}
+                                                            <div>
+                                                                <label className="block text-sm font-medium text-gray-700 mb-1">Rate (₹) *</label>
+                                                                <Input
+                                                                    type="number"
+                                                                    value={editingEntry ? editForm.rate : rateForm.rate}
+                                                                    onChange={(e) => {
+                                                                        const value = parseFloat(e.target.value) || 0
+                                                                        if (editingEntry) {
+                                                                            setEditForm({ ...editForm, rate: value })
+                                                                        } else {
+                                                                            setRateForm({ ...rateForm, rate: value })
+                                                                        }
+                                                                    }}
+                                                                    placeholder="0.00"
+                                                                    className="w-full"
+                                                                />
+                                                            </div>
+
+                                                            {/* Start Date */}
+                                                            <div>
+                                                                <label className="block text-sm font-medium text-gray-700 mb-1">Start Date *</label>
+                                                                <Input
+                                                                    type="date"
+                                                                    value={editingEntry ? editForm.startDate : rateForm.startDate}
+                                                                    onChange={(e) => {
+                                                                        if (editingEntry) {
+                                                                            setEditForm({ ...editForm, startDate: e.target.value })
+                                                                        } else {
+                                                                            setRateForm({ ...rateForm, startDate: e.target.value })
+                                                                        }
+                                                                    }}
+                                                                    className="w-full"
+                                                                />
+                                                            </div>
+
+                                                            {/* End Date */}
+                                                            <div>
+                                                                <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                                                                <Input
+                                                                    type="date"
+                                                                    value={editingEntry ? editForm.endDate : rateForm.endDate}
+                                                                    onChange={(e) => {
+                                                                        if (editingEntry) {
+                                                                            setEditForm({ ...editForm, endDate: e.target.value })
+                                                                        } else {
+                                                                            setRateForm({ ...rateForm, endDate: e.target.value })
+                                                                        }
+                                                                    }}
+                                                                    className="w-full"
+                                                                />
+                                                            </div>
+
+                                                            {/* Notes */}
+                                                            <div className="md:col-span-2">
+                                                                <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                                                                <textarea
+                                                                    value={editingEntry ? editForm.notes : rateForm.notes}
+                                                                    onChange={(e) => {
+                                                                        if (editingEntry) {
+                                                                            setEditForm({ ...editForm, notes: e.target.value })
+                                                                        } else {
+                                                                            setRateForm({ ...rateForm, notes: e.target.value })
+                                                                        }
+                                                                    }}
+                                                                    placeholder="Additional notes..."
+                                                                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                                                    rows={3}
+                                                                />
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="flex justify-end space-x-3 mt-4">
+                                                            <Button
+                                                                onClick={editingEntry ? handleCancelEdit : () => setShowRateForm(false)}
+                                                                variant="outline"
+                                                            >
+                                                                Cancel
+                                                            </Button>
+                                                            <Button
+                                                                onClick={editingEntry ? handleUpdateRate : handleAddRate}
+                                                                className="bg-orange-600 hover:bg-orange-700"
+                                                            >
+                                                                {editingEntry ? 'Update Rate' : 'Add Rate'}
+                                                            </Button>
+                                                        </div>
+                                                    </CardContent>
+                                                </Card>
+                                            )}
+
+                                            {/* Search and Filter */}
+                                            <div className="mb-4">
+                                                <div className="flex items-center space-x-4">
+                                                    <div className="flex-1">
+                                                        <Input
+                                                            placeholder="Search by material name or code..."
+                                                            value={rateSearchTerm}
+                                                            onChange={(e) => setRateSearchTerm(e.target.value)}
+                                                            className="w-full"
+                                                        />
+                                                    </div>
+                                                    <div className="text-sm text-gray-600">
+                                                        {filteredRateEntries.length} entries found
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Rate Chart Grid */}
                                             <div className="overflow-x-auto">
                                                 <table className="min-w-full border border-gray-200 rounded-lg">
                                                     <thead className="bg-blue-50">
                                                         <tr>
                                                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider border-r">
-                                                                MATERIAL CODE
+                                                                Material
                                                             </th>
                                                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider border-r">
-                                                                MATERIAL NAME
+                                                                Customer Type
                                                             </th>
-                                                            <th className="px-4 py-3 text-center text-xs font-medium text-gray-600 uppercase tracking-wider border-r" colSpan={customerTypes.length * 2}>
-                                                                CUSTOMER TYPE
+                                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider border-r">
+                                                                Rate (₹)
+                                                            </th>
+                                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider border-r">
+                                                                Start Date
+                                                            </th>
+                                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider border-r">
+                                                                End Date
                                                             </th>
                                                             <th className="px-4 py-3 text-center text-xs font-medium text-gray-600 uppercase tracking-wider">
-                                                                OPERATION
+                                                                Actions
                                                             </th>
-                                                        </tr>
-                                                        <tr className="bg-blue-100">
-                                                            <th className="px-4 py-2 text-xs font-medium text-gray-600 border-r"></th>
-                                                            <th className="px-4 py-2 text-xs font-medium text-gray-600 border-r"></th>
-                                                            {customerTypes.map((type) => (
-                                                                <React.Fragment key={type.id}>
-                                                                    <th className="px-2 py-2 text-xs font-medium text-gray-600 border-r">
-                                                                        {type.name}
-                                                                    </th>
-                                                                    <th className="px-2 py-2 text-xs font-medium text-gray-600 border-r">
-                                                                        START DATE
-                                                                    </th>
-                                                                </React.Fragment>
-                                                            ))}
-                                                            <th className="px-4 py-2 text-xs font-medium text-gray-600"></th>
                                                         </tr>
                                                     </thead>
                                                     <tbody className="bg-white divide-y divide-gray-200">
-                                                        {rateChartEntries.map((entry) => (
-                                                            <tr key={entry.id} className="hover:bg-gray-50">
-                                                                <td className="px-4 py-3 text-sm font-medium text-gray-900 border-r">
-                                                                    {entry.materialCode}
-                                                                </td>
-                                                                <td className="px-4 py-3 text-sm text-gray-900 border-r">
-                                                                    {entry.materialName}
-                                                                </td>
-                                                                {customerTypes.map((type) => {
-                                                                    const rate = entry.rates.find(r => r.customerTypeId === type.id)
-                                                                    return (
-                                                                        <React.Fragment key={type.id}>
-                                                                            <td className="px-2 py-3 text-sm text-gray-900 border-r">
-                                                                                {editingRate?.materialId === entry.id && editingRate?.customerTypeId === type.id ? (
-                                                                                    <div className="flex items-center space-x-1">
-                                                                                        <Input
-                                                                                            type="number"
-                                                                                            value={newRate.rate}
-                                                                                            onChange={(e) => setNewRate({ ...newRate, rate: parseFloat(e.target.value) || 0 })}
-                                                                                            className="w-16 text-xs"
-                                                                                            placeholder="0.00"
-                                                                                        />
-                                                                                        <Button
-                                                                                            size="sm"
-                                                                                            onClick={() => {
-                                                                                                const updatedEntries = rateChartEntries.map(e => {
-                                                                                                    if (e.id === entry.id) {
-                                                                                                        const updatedRates = e.rates.filter(r => r.customerTypeId !== type.id)
-                                                                                                        updatedRates.push({
-                                                                                                            materialId: entry.id,
-                                                                                                            customerTypeId: type.id,
-                                                                                                            rate: newRate.rate,
-                                                                                                            startDate: newRate.startDate,
-                                                                                                            isActive: true
-                                                                                                        })
-                                                                                                        return { ...e, rates: updatedRates }
-                                                                                                    }
-                                                                                                    return e
-                                                                                                })
-                                                                                                setRateChartEntries(updatedEntries)
-                                                                                                setEditingRate(null)
-                                                                                                setNewRate({ rate: 0, startDate: '' })
-                                                                                            }}
-                                                                                            className="bg-green-600 hover:bg-green-700 text-xs px-2 py-1"
-                                                                                        >
-                                                                                            ✓
-                                                                                        </Button>
-                                                                                        <Button
-                                                                                            size="sm"
-                                                                                            onClick={() => setEditingRate(null)}
-                                                                                            variant="outline"
-                                                                                            className="text-xs px-2 py-1"
-                                                                                        >
-                                                                                            ✕
-                                                                                        </Button>
+                                                        {paginatedRateEntries.map((entry) => (
+                                                            <React.Fragment key={entry.id}>
+                                                                <tr className="hover:bg-gray-50">
+                                                                    <td className="px-4 py-3 text-sm font-medium text-gray-900 border-r">
+                                                                        <div>
+                                                                            <div className="font-medium">{entry.materialName}</div>
+                                                                            <div className="text-xs text-gray-500">{entry.materialCode}</div>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td className="px-4 py-3 text-sm text-gray-900 border-r">
+                                                                        {entry.rates.length} customer type(s)
+                                                                    </td>
+                                                                    <td className="px-4 py-3 text-sm text-gray-900 border-r">
+                                                                        {entry.rates.length > 0 ? (
+                                                                            <div className="space-y-1">
+                                                                                {entry.rates.slice(0, 2).map((rate, index) => (
+                                                                                    <div key={index} className="text-sm">
+                                                                                        ₹{rate.rate.toFixed(2)}
                                                                                     </div>
-                                                                                ) : (
-                                                                                    <div className="flex items-center justify-between">
-                                                                                        <span className="text-sm">
-                                                                                            {rate ? `₹ ${rate.rate.toFixed(2)}` : '₹ '}
-                                                                                        </span>
-                                                                                        <Button
-                                                                                            size="sm"
-                                                                                            onClick={() => {
-                                                                                                setEditingRate({ materialId: entry.id, customerTypeId: type.id })
-                                                                                                setNewRate({
-                                                                                                    rate: rate?.rate || 0,
-                                                                                                    startDate: rate?.startDate || new Date().toLocaleDateString('en-GB')
-                                                                                                })
-                                                                                            }}
-                                                                                            variant="outline"
-                                                                                            className="text-xs px-1 py-1 ml-1"
-                                                                                        >
-                                                                                            ✏️
-                                                                                        </Button>
+                                                                                ))}
+                                                                                {entry.rates.length > 2 && (
+                                                                                    <div className="text-xs text-gray-500">+{entry.rates.length - 2} more</div>
+                                                                                )}
+                                                                            </div>
+                                                                        ) : (
+                                                                            <span className="text-gray-400">No rates</span>
+                                                                        )}
+                                                                    </td>
+                                                                    <td className="px-4 py-3 text-sm text-gray-900 border-r">
+                                                                        {entry.rates.length > 0 ? (
+                                                                            <div className="space-y-1">
+                                                                                {entry.rates.slice(0, 2).map((rate, index) => (
+                                                                                    <div key={index} className="text-sm">
+                                                                                        {rate.startDate}
                                                                                     </div>
-                                                                                )}
-                                                                            </td>
-                                                                            <td className="px-2 py-3 text-sm text-gray-900 border-r">
-                                                                                {editingRate?.materialId === entry.id && editingRate?.customerTypeId === type.id ? (
-                                                                                    <Input
-                                                                                        type="date"
-                                                                                        value={newRate.startDate}
-                                                                                        onChange={(e) => setNewRate({ ...newRate, startDate: e.target.value })}
-                                                                                        className="w-24 text-xs"
-                                                                                    />
-                                                                                ) : (
-                                                                                    <span className="text-sm">
-                                                                                        {rate?.startDate || ''}
-                                                                                    </span>
-                                                                                )}
-                                                                            </td>
-                                                                        </React.Fragment>
-                                                                    )
-                                                                })}
-                                                                <td className="px-4 py-3 text-center">
-                                                                    <Button
-                                                                        size="sm"
-                                                                        variant="outline"
-                                                                        className="text-xs px-2 py-1"
-                                                                    >
-                                                                        ✏️
-                                                                    </Button>
-                                                                </td>
-                                                            </tr>
+                                                                                ))}
+                                                                            </div>
+                                                                        ) : (
+                                                                            <span className="text-gray-400">-</span>
+                                                                        )}
+                                                                    </td>
+                                                                    <td className="px-4 py-3 text-sm text-gray-900 border-r">
+                                                                        {entry.rates.length > 0 ? (
+                                                                            <div className="space-y-1">
+                                                                                {entry.rates.slice(0, 2).map((rate, index) => (
+                                                                                    <div key={index} className="text-sm">
+                                                                                        {rate.endDate || '-'}
+                                                                                    </div>
+                                                                                ))}
+                                                                            </div>
+                                                                        ) : (
+                                                                            <span className="text-gray-400">-</span>
+                                                                        )}
+                                                                    </td>
+                                                                    <td className="px-4 py-3 text-center">
+                                                                        <div className="flex items-center justify-center space-x-2">
+                                                                            <Button
+                                                                                size="sm"
+                                                                                variant="outline"
+                                                                                onClick={() => toggleRowExpansion(entry.id)}
+                                                                                className="text-xs px-2 py-1"
+                                                                            >
+                                                                                {expandedRows.has(entry.id) ? '▼' : '▶'}
+                                                                            </Button>
+                                                                            <Button
+                                                                                size="sm"
+                                                                                variant="outline"
+                                                                                onClick={() => handleEditEntry(entry)}
+                                                                                className="text-xs px-2 py-1"
+                                                                            >
+                                                                                ✏️
+                                                                            </Button>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+
+                                                                {/* Expanded Row - History */}
+                                                                {expandedRows.has(entry.id) && (
+                                                                    <tr className="bg-gray-50">
+                                                                        <td colSpan={6} className="px-4 py-3">
+                                                                            <div className="space-y-3">
+                                                                                <h4 className="font-medium text-gray-900">Rate History</h4>
+                                                                                <div className="space-y-2">
+                                                                                    {entry.rates.map((rate, index) => {
+                                                                                        const customerType = customerTypes.find(ct => ct.id === rate.customerTypeId)
+                                                                                        return (
+                                                                                            <div key={index} className="bg-white p-3 rounded border">
+                                                                                                <div className="flex items-center justify-between">
+                                                                                                    <div>
+                                                                                                        <div className="font-medium">{customerType?.name || 'Unknown Type'}</div>
+                                                                                                        <div className="text-sm text-gray-600">
+                                                                                                            Rate: ₹{rate.rate.toFixed(2)} |
+                                                                                                            Start: {rate.startDate} |
+                                                                                                            End: {rate.endDate || 'No end date'}
+                                                                                                        </div>
+                                                                                                    </div>
+                                                                                                    <div className="flex items-center space-x-2">
+                                                                                                        <div className="text-xs text-gray-500">
+                                                                                                            {rate.isActive ? 'Active' : 'Inactive'}
+                                                                                                        </div>
+                                                                                                        <Button
+                                                                                                            size="sm"
+                                                                                                            variant="outline"
+                                                                                                            onClick={() => handleEditRate(entry, index)}
+                                                                                                            className="text-xs px-2 py-1"
+                                                                                                        >
+                                                                                                            ✏️
+                                                                                                        </Button>
+                                                                                                        <Button
+                                                                                                            size="sm"
+                                                                                                            variant="outline"
+                                                                                                            onClick={() => handleDeleteRate(entry.id, index)}
+                                                                                                            className="text-xs px-2 py-1 text-red-600 hover:bg-red-50"
+                                                                                                        >
+                                                                                                            🗑️
+                                                                                                        </Button>
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        )
+                                                                                    })}
+                                                                                </div>
+                                                                            </div>
+                                                                        </td>
+                                                                    </tr>
+                                                                )}
+                                                            </React.Fragment>
                                                         ))}
                                                     </tbody>
                                                 </table>
                                             </div>
 
-                                            {/* Add New Material Button */}
-                                            <div className="mt-4">
-                                                <Button
-                                                    onClick={() => {
-                                                        const newEntry: RateChartEntry = {
-                                                            id: `RC${Date.now()}`,
-                                                            materialCode: `MM-${rateChartEntries.length + 1}`,
-                                                            materialName: 'New Material',
-                                                            rates: [],
-                                                            isActive: true
-                                                        }
-                                                        setRateChartEntries([...rateChartEntries, newEntry])
-                                                    }}
-                                                    className="bg-orange-600 hover:bg-orange-700"
-                                                >
-                                                    + Add New Material
-                                                </Button>
-                                            </div>
+                                            {/* Pagination */}
+                                            {rateTotalPages > 1 && (
+                                                <div className="flex items-center justify-between mt-4">
+                                                    <div className="text-sm text-gray-600">
+                                                        Showing {((rateCurrentPage - 1) * rateItemsPerPage) + 1} to {Math.min(rateCurrentPage * rateItemsPerPage, filteredRateEntries.length)} of {filteredRateEntries.length} entries
+                                                    </div>
+                                                    <div className="flex items-center space-x-2">
+                                                        <Button
+                                                            onClick={() => setRateCurrentPage(Math.max(1, rateCurrentPage - 1))}
+                                                            disabled={rateCurrentPage === 1}
+                                                            variant="outline"
+                                                            size="sm"
+                                                        >
+                                                            Previous
+                                                        </Button>
+                                                        <span className="text-sm text-gray-600">
+                                                            Page {rateCurrentPage} of {rateTotalPages}
+                                                        </span>
+                                                        <Button
+                                                            onClick={() => setRateCurrentPage(Math.min(rateTotalPages, rateCurrentPage + 1))}
+                                                            disabled={rateCurrentPage === rateTotalPages}
+                                                            variant="outline"
+                                                            size="sm"
+                                                        >
+                                                            Next
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 )}

@@ -16,15 +16,31 @@
       "static/chunks/main-app.js",
       "static/chunks/app/dashboard/page.js"
     ],
+    "/retail/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/retail/layout.js"
+    ],
     "/retail/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/retail/page.js"
     ],
-    "/retail/layout": [
+    "/retail/settings/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/retail/layout.js"
+      "static/chunks/app/retail/settings/page.js"
+    ],
+    "/retail/tour/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/css/app/retail/tour/page.css",
+      "static/chunks/app/retail/tour/page.js"
+    ],
+    "/retail/inventory/stock-in/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/retail/inventory/stock-in/page.js"
     ],
     "/retail/sales/page": [
       "static/chunks/webpack.js",
@@ -41,20 +57,20 @@
       "static/chunks/main-app.js",
       "static/chunks/app/retail/reports/page.js"
     ],
+    "/retail/pos/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/retail/pos/page.js"
+    ],
     "/retail/inventory/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/retail/inventory/page.js"
     ],
-    "/retail/inventory/stock-in/page": [
+    "/retail/help/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/retail/inventory/stock-in/page.js"
-    ],
-    "/retail/settings/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/retail/settings/page.js"
+      "static/chunks/app/retail/help/page.js"
     ]
   }
 }
