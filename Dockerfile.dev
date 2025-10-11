@@ -1,0 +1,42 @@
+# Development Dockerfile for Retail All-in-One Monorepo
+FROM node:18-alpine AS base
+
+# Install dependencies for development
+RUN apk add --no-cache libc6-compat git
+
+# Development stage
+FROM base AS development
+WORKDIR /app
+
+# Copy package files
+COPY package.json ./
+
+# Create directories for apps and packages
+RUN mkdir -p apps/web apps/garment apps/pharmacy apps/retail packages/shared packages/ui
+
+# Copy package.json files
+COPY apps/web/package.json ./apps/web/
+COPY apps/garment/package.json ./apps/garment/
+COPY apps/pharmacy/package.json ./apps/pharmacy/
+COPY apps/retail/package.json ./apps/retail/
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/ui/package.json ./packages/ui/
+
+# Install dependencies (including dev dependencies for development)
+RUN npm install
+
+# Copy source code
+COPY . .
+
+# Build shared packages first (required for apps to work)
+RUN npm run build:packages
+
+# Expose ports for all applications
+EXPOSE 3000 3001 3002 3003
+
+# Set environment variables for development
+ENV NODE_ENV=development
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Default command (will be overridden by docker-compose)
+CMD ["npm", "run", "dev:local"]

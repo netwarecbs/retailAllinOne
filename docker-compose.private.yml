@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  web:
+    image: your-dockerhub-username/retail-allinone-web:latest
+    container_name: retail-web-prod
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+    restart: unless-stopped
+    networks:
+      - retail-network
+    # For private repositories, ensure proper authentication
+    pull_policy: always
+
+  garment:
+    image: your-dockerhub-username/retail-allinone-garment:latest
+    container_name: retail-garment-prod
+    ports:
+      - "3001:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+    restart: unless-stopped
+    networks:
+      - retail-network
+    pull_policy: always
+
+  pharmacy:
+    image: your-dockerhub-username/retail-allinone-pharmacy:latest
+    container_name: retail-pharmacy-prod
+    ports:
+      - "3002:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+    restart: unless-stopped
+    networks:
+      - retail-network
+    pull_policy: always
+
+  retail:
+    image: your-dockerhub-username/retail-allinone-retail:latest
+    container_name: retail-shop-prod
+    ports:
+      - "3003:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+    restart: unless-stopped
+    networks:
+      - retail-network
+    pull_policy: always
+
+  nginx:
+    image: nginx:alpine
+    container_name: retail-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - web
+      - garment
+      - pharmacy
+      - retail
+    restart: unless-stopped
+    networks:
+      - retail-network
+
+networks:
+  retail-network:
+    driver: bridge

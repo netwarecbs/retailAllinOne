@@ -1,0 +1,112 @@
+# Multi-stage build for production with all applications
+FROM node:18-alpine AS base
+
+# Install dependencies only when needed
+FROM base AS deps
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+
+# Copy package files
+COPY package.json ./
+COPY apps/web/package.json ./apps/web/
+COPY apps/garment/package.json ./apps/garment/
+COPY apps/pharmacy/package.json ./apps/pharmacy/
+COPY apps/retail/package.json ./apps/retail/
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/ui/package.json ./packages/ui/
+
+# Install dependencies
+RUN npm ci --only=production
+
+# Rebuild the source code only when needed
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+# Build all applications
+RUN npm run build
+
+# Production image for Web App
+FROM base AS web-runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+COPY --from=builder /app/apps/web/public ./apps/web/public
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/static ./apps/web/.next/static
+
+USER nextjs
+EXPOSE 3000
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+CMD ["node", "apps/web/server.js"]
+
+# Production image for Garment App
+FROM base AS garment-runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+COPY --from=builder /app/apps/garment/public ./apps/garment/public
+COPY --from=builder --chown=nextjs:nodejs /app/apps/garment/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/apps/garment/.next/static ./apps/garment/.next/static
+
+USER nextjs
+EXPOSE 3000
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+CMD ["node", "apps/garment/server.js"]
+
+# Production image for Pharmacy App
+FROM base AS pharmacy-runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+COPY --from=builder /app/apps/pharmacy/public ./apps/pharmacy/public
+COPY --from=builder --chown=nextjs:nodejs /app/apps/pharmacy/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/apps/pharmacy/.next/static ./apps/pharmacy/.next/static
+
+USER nextjs
+EXPOSE 3000
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+CMD ["node", "apps/pharmacy/server.js"]
+
+# Production image for Retail App
+FROM base AS retail-runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+COPY --from=builder /app/apps/retail/public ./apps/retail/public
+COPY --from=builder --chown=nextjs:nodejs /app/apps/retail/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/apps/retail/.next/static ./apps/retail/.next/static
+
+USER nextjs
+EXPOSE 3000
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+CMD ["node", "apps/retail/server.js"]
