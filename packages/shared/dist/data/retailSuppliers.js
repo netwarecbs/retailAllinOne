@@ -54,5 +54,61 @@ export const retailSuppliers = [
         creditLimit: 300000,
         outstandingAmount: 75000,
         isActive: true
+    },
+    {
+        id: "SUP005",
+        name: "AMADPUR U.C.A.C.S LTD",
+        contact: "8967854686",
+        email: "amadpur@ucacs.com",
+        gstin: "19AAAAB7509EIZY",
+        address: "AMADPUR MEMARI",
+        city: "Memari",
+        state: "West Bengal",
+        pincode: "713154",
+        creditLimit: 500000,
+        outstandingAmount: 125000,
+        isActive: true
+    },
+    {
+        id: "SUP006",
+        name: "SRIDHARPUR CO. BANK",
+        contact: "9732192611",
+        email: "sridharpur@bank.com",
+        gstin: "19AAQAS7094F1ZR",
+        address: "Sridharpur",
+        city: "Memari",
+        state: "West Bengal",
+        pincode: "713151",
+        creditLimit: 750000,
+        outstandingAmount: 200000,
+        isActive: true
+    },
+    {
+        id: "SUP007",
+        name: "HATDALUIBAZAR S.U.O.B.S.S LTD",
+        contact: "6297356364",
+        email: "hatdalui@subss.com",
+        gstin: "19AAQAS7094F1ZR",
+        address: "HATDALUIBAZAR",
+        city: "Memari",
+        state: "West Bengal",
+        pincode: "713122",
+        creditLimit: 400000,
+        outstandingAmount: 85000,
+        isActive: true
+    },
+    {
+        id: "SUP008",
+        name: "IFFCO",
+        contact: "8584833226",
+        email: "iffco@suppliers.com",
+        gstin: "07AABCI1420B1Z5",
+        address: "IFFCO House, Sector 29",
+        city: "Gurgaon",
+        state: "Haryana",
+        pincode: "122001",
+        creditLimit: 1000000,
+        outstandingAmount: 300000,
+        isActive: true
     }
 ];
