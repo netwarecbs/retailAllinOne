@@ -1,10 +1,8 @@
 {
-  "/retail/inventory/page": "app/retail/inventory/page.js",
-  "/retail/tour/page": "app/retail/tour/page.js",
-  "/retail/sales/page": "app/retail/sales/page.js",
-  "/retail/settings/page": "app/retail/settings/page.js",
-  "/retail/pos/page": "app/retail/pos/page.js",
-  "/retail/customers/page": "app/retail/customers/page.js",
-  "/retail/reports/page": "app/retail/reports/page.js",
-  "/retail/help/page": "app/retail/help/page.js"
+  "/page": "app/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/login/page": "app/login/page.js",
+  "/retail/page": "app/retail/page.js",
+  "/retail/purchase/page": "app/retail/purchase/page.js",
+  "/retail/inventory/page": "app/retail/inventory/page.js"
 }

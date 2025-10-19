@@ -167,8 +167,19 @@ const productSlice = createSlice({
         },
         deleteCustomer: (state, action) => {
             state.customers = state.customers.filter(c => c.id !== action.payload);
+        },
+        processPurchaseBill: (state, action) => {
+            // Update product stock when purchase bill is processed
+            action.payload.products.forEach(purchaseProduct => {
+                const product = state.products.find(p => p.sku === purchaseProduct.productId);
+                if (product) {
+                    product.stock += purchaseProduct.quantity;
+                    // Update cost price if needed (optional)
+                    // product.costPrice = purchaseProduct.unitPrice
+                }
+            });
         }
     }
 });
-export const { setLoading, setError, addProduct, updateProduct, deleteProduct, updateStock, addStockInRecord, setSelectedVendor, addVendor, updateVendor, deleteVendor, addCustomer, updateCustomer, deleteCustomer } = productSlice.actions;
+export const { setLoading, setError, addProduct, updateProduct, deleteProduct, updateStock, addStockInRecord, setSelectedVendor, addVendor, updateVendor, deleteVendor, addCustomer, updateCustomer, deleteCustomer, processPurchaseBill } = productSlice.actions;
 export default productSlice.reducer;

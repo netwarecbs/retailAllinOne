@@ -23,6 +23,7 @@ export function getEmptyAuthz() {
                 pages: {
                     dashboard: { allowed: false },
                     inventory: { allowed: false },
+                    purchase: { allowed: false },
                     sales: { allowed: false },
                     customers: { allowed: false },
                     reports: { allowed: false },
@@ -67,7 +68,8 @@ export function getAuthzForRole(role) {
             const a9 = allowPage(a8, 'pharmacy', 'dashboard');
             const a10 = allowPage(a9, 'retail', 'dashboard', { viewSales: true, viewInventory: true, viewCustomers: true, viewOrders: true });
             const a11 = allowPage(a10, 'retail', 'inventory', { create: true, update: true, delete: true, export: true, print: true, generateBarcode: true, manageCategories: true, manageBrands: true, stockAdjustment: true, lowStockAlert: true });
-            const a12 = allowPage(a11, 'retail', 'sales', { create: true, update: true, delete: true, save: true, print: true, pdf: true, hold: true, view: true, refund: true, exchange: true });
+            const a11a = allowPage(a11, 'retail', 'purchase', { create: true, update: true, delete: true, save: true, print: true, pdf: true, view: true, process: true, manageVendors: true });
+            const a12 = allowPage(a11a, 'retail', 'sales', { create: true, update: true, delete: true, save: true, print: true, pdf: true, hold: true, view: true, refund: true, exchange: true });
             const a13 = allowPage(a12, 'retail', 'customers', { create: true, update: true, delete: true, view: true, export: true, import: true, manageLoyalty: true, viewHistory: true });
             const a14 = allowPage(a13, 'retail', 'reports', { viewSales: true, viewInventory: true, viewCustomers: true, viewProfit: true, export: true, print: true, schedule: true, custom: true });
             const a15 = allowPage(a14, 'retail', 'pos', { create: true, save: true, print: true, pdf: true, hold: true, view: true, refund: true, exchange: true, discount: true, tax: true });
@@ -98,6 +100,7 @@ export function getAuthzForRole(role) {
             let a = allowTile(base, 'retail');
             a = allowPage(a, 'retail', 'dashboard', { viewSales: true, viewInventory: true, viewCustomers: true, viewOrders: true });
             a = allowPage(a, 'retail', 'inventory', { create: true, update: true, delete: true, export: true, print: true, generateBarcode: true, manageCategories: true, manageBrands: true, stockAdjustment: true, lowStockAlert: true });
+            a = allowPage(a, 'retail', 'purchase', { create: true, update: true, delete: true, save: true, print: true, pdf: true, view: true, process: true, manageVendors: true });
             a = allowPage(a, 'retail', 'sales', { create: true, update: true, delete: true, save: true, print: true, pdf: true, hold: true, view: true, refund: true, exchange: true });
             a = allowPage(a, 'retail', 'customers', { create: true, update: true, delete: true, view: true, export: true, import: true, manageLoyalty: true, viewHistory: true });
             a = allowPage(a, 'retail', 'reports', { viewSales: true, viewInventory: true, viewCustomers: true, viewProfit: true, export: true, print: true, schedule: true, custom: true });

@@ -3,6 +3,36 @@ import { AuthState, LoginRequest, User, Authorization } from '../types/auth';
 import { apiService } from '../services/api';
 import { getAuthzForRole } from '../services/roles';
 
+// Utility function to update existing authz data with new purchase page permissions
+const updateAuthzWithPurchase = (authz: Authorization | null): Authorization | null => {
+  if (!authz) return null;
+
+  const updatedAuthz = JSON.parse(JSON.stringify(authz));
+
+  // Add purchase page to retail tile if it doesn't exist
+  if (updatedAuthz.tiles?.retail?.allowed && !updatedAuthz.tiles.retail.pages?.purchase) {
+    updatedAuthz.tiles.retail.pages = {
+      ...updatedAuthz.tiles.retail.pages,
+      purchase: {
+        allowed: true,
+        actions: {
+          create: true,
+          update: true,
+          delete: true,
+          save: true,
+          print: true,
+          pdf: true,
+          view: true,
+          process: true,
+          manageVendors: true
+        }
+      }
+    };
+  }
+
+  return updatedAuthz;
+};
+
 const getInitialData = () => {
   if (typeof window !== 'undefined') {
     const accessToken = localStorage.getItem('access_token');
@@ -19,7 +49,7 @@ const getInitialData = () => {
       } : null,
       user: userData ? JSON.parse(userData) : null,
       branches: branchesData ? JSON.parse(branchesData) : [],
-      authz: authzData ? JSON.parse(authzData) as Authorization : null,
+      authz: authzData ? updateAuthzWithPurchase(JSON.parse(authzData) as Authorization) : null,
       isAuthenticated: !!accessToken
     };
   }
@@ -78,6 +108,7 @@ export const loginUser = createAsyncThunk(
                 pages: {
                   dashboard: { allowed: true, actions: { viewSales: true, viewInventory: true, viewCustomers: true, viewOrders: true } },
                   inventory: { allowed: true, actions: { create: true, update: true, delete: true, export: true, print: true, generateBarcode: true, manageCategories: true, manageBrands: true, stockAdjustment: true, lowStockAlert: true } },
+                  purchase: { allowed: true, actions: { create: true, update: true, delete: true, save: true, print: true, pdf: true, view: true, process: true, manageVendors: true } },
                   sales: { allowed: true, actions: { create: true, update: true, delete: true, save: true, print: true, pdf: true, hold: true, view: true, refund: true, exchange: true } },
                   customers: { allowed: true, actions: { create: true, update: true, delete: true, view: true, export: true, import: true, manageLoyalty: true, viewHistory: true } },
                   reports: { allowed: true, actions: { viewSales: true, viewInventory: true, viewCustomers: true, viewProfit: true, export: true, print: true, schedule: true, custom: true } },
@@ -138,6 +169,15 @@ const authSlice = createSlice({
     setAuthorization: (state, action: PayloadAction<Authorization | null>) => {
       state.authz = action.payload;
     },
+    updateAuthorizationWithPurchase: (state) => {
+      if (state.authz) {
+        const updatedAuthz = updateAuthzWithPurchase(state.authz);
+        state.authz = updatedAuthz;
+        if (typeof window !== 'undefined' && updatedAuthz) {
+          localStorage.setItem('authz_data', JSON.stringify(updatedAuthz));
+        }
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -154,9 +194,10 @@ const authSlice = createSlice({
         state.branches = action.payload.branches;
         // Prefer authz from API. If missing, generate from role and persist
         const computedAuthz = action.payload.authz ?? (action.payload.user?.role ? getAuthzForRole(action.payload.user.role) : null);
-        state.authz = computedAuthz ?? null;
+        const updatedAuthz = updateAuthzWithPurchase(computedAuthz);
+        state.authz = updatedAuthz ?? null;
         if (typeof window !== 'undefined') {
-          if (computedAuthz) localStorage.setItem('authz_data', JSON.stringify(computedAuthz));
+          if (updatedAuthz) localStorage.setItem('authz_data', JSON.stringify(updatedAuthz));
         }
         state.error = null;
       })
@@ -189,5 +230,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { clearError, setUser, setTokens } = authSlice.actions;
+export const { clearError, setUser, setTokens, updateAuthorizationWithPurchase } = authSlice.actions;
 export default authSlice.reducer;

@@ -246,6 +246,17 @@ const productSlice = createSlice({
     },
     deleteCustomer: (state, action: PayloadAction<string>) => {
       state.customers = state.customers.filter(c => c.id !== action.payload)
+    },
+    processPurchaseBill: (state, action: PayloadAction<{ products: Array<{ productId: string; quantity: number; unitPrice: number }> }>) => {
+      // Update product stock when purchase bill is processed
+      action.payload.products.forEach(purchaseProduct => {
+        const product = state.products.find(p => p.sku === purchaseProduct.productId)
+        if (product) {
+          product.stock += purchaseProduct.quantity
+          // Update cost price if needed (optional)
+          // product.costPrice = purchaseProduct.unitPrice
+        }
+      })
     }
   }
 })
@@ -264,7 +275,8 @@ export const {
   deleteVendor,
   addCustomer,
   updateCustomer,
-  deleteCustomer
+  deleteCustomer,
+  processPurchaseBill
 } = productSlice.actions
 
 export default productSlice.reducer

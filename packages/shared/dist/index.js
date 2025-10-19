@@ -2,6 +2,7 @@
 export * from './types/auth';
 export * from './types/product';
 export * from './types/sales';
+export * from './types/challan';
 // Services
 export { default as apiService } from './services/api';
 export * as authzUtils from './services/authorization';
@@ -11,16 +12,19 @@ export { getAuthzForRole } from './services/roles';
 // Store
 export { store } from './store';
 export { default as authReducer } from './store/authSlice';
-export { loginUser, logoutUser, fetchUserProfile, clearError, setUser, setTokens } from './store/authSlice';
+export { loginUser, logoutUser, fetchUserProfile, clearError, setUser, setTokens, updateAuthorizationWithPurchase } from './store/authSlice';
 export { default as productReducer } from './store/productSlice';
-export { setLoading, setError, addProduct, updateProduct, deleteProduct, updateStock, addStockInRecord, setSelectedVendor, addVendor, updateVendor, deleteVendor, addCustomer, updateCustomer, deleteCustomer } from './store/productSlice';
+export { setLoading, setError, addProduct, updateProduct, deleteProduct, updateStock, addStockInRecord, setSelectedVendor, addVendor, updateVendor, deleteVendor, addCustomer, updateCustomer, deleteCustomer, processPurchaseBill } from './store/productSlice';
 export { default as salesReducer } from './store/salesSlice';
 export { createSale, searchCustomers, addToCart, updateCartItem, removeFromCart, clearCart, setCustomer, updatePaymentDetails, setDiscount, setExtraLess, setSavings, updatePaymentAmount, holdInvoice, loadHeldInvoice, removeHeldInvoice, setInvoiceNumber, clearError as clearSalesError } from './store/salesSlice';
 export { default as purchaseReducer } from './store/purchaseSlice';
 export { fetchPurchaseOrders, createPurchaseOrder, fetchSuppliers, createSupplier, setCurrentPurchaseOrder, addPurchaseItem, updatePurchaseItem, removePurchaseItem, updateSupplier, updatePaymentMethods, setExpenseCategory, clearCurrentPurchaseOrder, setSelectedSupplier, clearError as clearPurchaseError } from './store/purchaseSlice';
+export { default as challanReducer } from './store/challanSlice';
+export { setLoading as setChallanLoading, setError as setChallanError, setChallans, setSelectedVendor as setChallanSelectedVendor, selectChallan, deselectChallan, clearSelectedChallans, createPurchaseBill, updatePurchaseBillProduct, updatePaymentEntry, updateAdvanceAmount, submitPurchaseBill, clearCurrentPurchaseBill, addPaymentHistory, setPaymentHistory, addChallanFromStockIn } from './store/challanSlice';
 // Sample Data
 export { sampleProducts, sampleCategories } from './data/sampleProducts';
 export { sampleCustomers } from './data/sampleCustomers';
+export { sampleChallans, samplePaymentHistory } from './data/sampleChallans';
 // Retail Data
 export { retailProducts, categories, brands } from './data/retailProducts';
 export { retailSuppliers } from './data/retailSuppliers';

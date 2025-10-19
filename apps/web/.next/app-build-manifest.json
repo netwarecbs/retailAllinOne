@@ -1,76 +1,45 @@
 {
   "pages": {
+    "/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/page.js"
+    ],
     "/layout": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
-    "/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/page.js"
-    ],
     "/dashboard/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/dashboard/page.js"
-    ],
-    "/retail/layout": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/retail/layout.js"
     ],
     "/retail/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/retail/page.js"
     ],
-    "/retail/settings/page": [
+    "/retail/layout": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/retail/settings/page.js"
+      "static/chunks/app/retail/layout.js"
     ],
-    "/retail/tour/page": [
+    "/login/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/css/app/retail/tour/page.css",
-      "static/chunks/app/retail/tour/page.js"
+      "static/chunks/app/login/page.js"
     ],
-    "/retail/inventory/stock-in/page": [
+    "/retail/purchase/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/retail/inventory/stock-in/page.js"
-    ],
-    "/retail/sales/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/retail/sales/page.js"
-    ],
-    "/retail/customers/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/retail/customers/page.js"
-    ],
-    "/retail/reports/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/retail/reports/page.js"
-    ],
-    "/retail/pos/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/retail/pos/page.js"
+      "static/chunks/app/retail/purchase/page.js"
     ],
     "/retail/inventory/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/retail/inventory/page.js"
-    ],
-    "/retail/help/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/retail/help/page.js"
     ]
   }
 }

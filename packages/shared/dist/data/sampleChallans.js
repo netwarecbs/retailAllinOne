@@ -1,0 +1,166 @@
+export const sampleChallans = [
+    {
+        id: 'CH-001',
+        challanNo: '220',
+        challanDate: '25/05/2019',
+        vendorId: 'V-17',
+        vendorName: 'IFFCO',
+        vendorAddress: 'BURDWAN, BURDWAN, BURDWAN',
+        vendorContact: '8584833226',
+        vendorGstNo: 'The Purchase Sale Gl Code',
+        transportName: 'AKS CARRIAR',
+        transportNo: 'AKS001',
+        transportCharges: 0,
+        status: 'pending',
+        products: [
+            {
+                productId: 'RT001',
+                productName: 'HIMAWARI( 500ML) 20 pcs',
+                sku: 'RT001',
+                quantity: 5,
+                unitPrice: 25.932,
+                totalPrice: 129.66,
+                batchNo: 'B001',
+                mfDate: '2025-01-01',
+                expDate: '2026-12-31',
+                hsnCode: '1234',
+                gstRate: 18,
+                taxableValue: 129.66,
+                sgst: 11.67,
+                cgst: 11.67
+            }
+        ],
+        totalAmount: 153.00,
+        taxableAmount: 129.66,
+        totalGst: 23.34,
+        createdAt: '2025-10-11T10:30:00Z',
+        updatedAt: '2025-10-11T10:30:00Z'
+    },
+    {
+        id: 'CH-002',
+        challanNo: '1233',
+        challanDate: '03/09/2019',
+        vendorId: 'V-17',
+        vendorName: 'IFFCO',
+        vendorAddress: 'BURDWAN, BURDWAN, BURDWAN',
+        vendorContact: '8584833226',
+        vendorGstNo: 'The Purchase Sale Gl Code',
+        transportName: 'SELF',
+        transportNo: 'SELF001',
+        transportCharges: 0,
+        status: 'pending',
+        products: [
+            {
+                productId: 'RT002',
+                productName: 'Gohan (500gm)',
+                sku: 'RT002',
+                quantity: 10,
+                unitPrice: 422.50,
+                totalPrice: 4225.00,
+                batchNo: 'B002',
+                mfDate: '2025-02-01',
+                expDate: '2027-06-30',
+                hsnCode: '5678',
+                gstRate: 18,
+                taxableValue: 4225.00,
+                sgst: 380.25,
+                cgst: 380.25
+            }
+        ],
+        totalAmount: 4985.50,
+        taxableAmount: 4225.00,
+        totalGst: 760.50,
+        createdAt: '2025-10-09T14:20:00Z',
+        updatedAt: '2025-10-09T14:20:00Z'
+    },
+    {
+        id: 'CH-003',
+        challanNo: '3108',
+        challanDate: '09/10/2025',
+        vendorId: 'V-8',
+        vendorName: 'SRIDHARPUR CO. BANK',
+        vendorAddress: 'SRIDHARPUR, WEST BENGAL',
+        vendorContact: '9876543210',
+        vendorGstNo: '19ABCDE1234F1Z5',
+        transportName: 'SELF',
+        transportNo: 'SELF001',
+        transportCharges: 0,
+        status: 'pending',
+        products: [
+            {
+                productId: 'RT003',
+                productName: 'Nano D.A.P (250ml) Iffco',
+                sku: 'RT003',
+                quantity: 20,
+                unitPrice: 350.00,
+                totalPrice: 7000.00,
+                batchNo: 'B003',
+                mfDate: '2025-02-01',
+                expDate: '2027-06-30',
+                hsnCode: '9012',
+                gstRate: 18,
+                taxableValue: 7000.00,
+                sgst: 630.00,
+                cgst: 630.00
+            }
+        ],
+        totalAmount: 8260.00,
+        taxableAmount: 7000.00,
+        totalGst: 1260.00,
+        createdAt: '2025-10-09T14:20:00Z',
+        updatedAt: '2025-10-09T14:20:00Z'
+    },
+    {
+        id: 'CH-004',
+        challanNo: '3330',
+        challanDate: '11/10/2025',
+        vendorId: 'V-1',
+        vendorName: 'AMADPUR U.C.A.C.S LTD',
+        vendorAddress: 'AMADPUR, WEST BENGAL',
+        vendorContact: '9876543211',
+        vendorGstNo: '19ABCDE1234F1Z6',
+        transportName: 'AKS CARRIAR',
+        transportNo: 'AKS001',
+        transportCharges: 100.00,
+        status: 'pending',
+        products: [
+            {
+                productId: 'RT004',
+                productName: 'Urea (50kg)',
+                sku: 'RT004',
+                quantity: 5,
+                unitPrice: 800.00,
+                totalPrice: 4000.00,
+                batchNo: 'B004',
+                mfDate: '2025-01-15',
+                expDate: '2026-12-31',
+                hsnCode: '3456',
+                gstRate: 18,
+                taxableValue: 4000.00,
+                sgst: 360.00,
+                cgst: 360.00
+            }
+        ],
+        totalAmount: 4820.00,
+        taxableAmount: 4000.00,
+        totalGst: 720.00,
+        createdAt: '2025-10-11T10:30:00Z',
+        updatedAt: '2025-10-11T10:30:00Z'
+    }
+];
+export const samplePaymentHistory = [
+    {
+        srlNo: 1,
+        actionDate: '20.05.2025',
+        taxInvoiceNo: '40',
+        vendorDescription: 'AMADPUR U.C.A.C.S LTD[V-1]',
+        amount: 85312.50,
+        discountAmount: 0.00,
+        netAmount: 85312.50,
+        cash: 0,
+        cheque: 0,
+        credit: 85312.50,
+        adjust: 0,
+        operation: 'PAYMENT'
+    }
+];

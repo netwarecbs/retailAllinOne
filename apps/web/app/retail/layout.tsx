@@ -2,21 +2,30 @@
 
 import React from 'react'
 import { useRouter, usePathname } from 'next/navigation'
-import { useSelector, useDispatch } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { Button } from '@retail/ui'
-import { RootState, AppDispatch, logoutUser } from '@retail/shared'
+import { RootState, logoutUser } from '@retail/shared'
 import AuthGuard from '../../components/AuthGuard'
 import { TileGuard, PageGuard, NotAuthorized } from '../../components/RBAC'
 import { TourButton } from './components/TourButton'
+import { ToastProvider } from './hooks/useToast'
+import './utils/updateAuthz'
 
 export default function RetailLayout({ children }: { children: React.ReactNode }) {
     const router = useRouter()
     const pathname = usePathname()
-    const dispatch = useDispatch<AppDispatch>()
     const { user } = useSelector((state: RootState) => state.auth)
 
     const handleLogout = async () => {
-        await dispatch(logoutUser())
+        // Clear localStorage
+        if (typeof window !== 'undefined') {
+            localStorage.removeItem('access_token')
+            localStorage.removeItem('refresh_token')
+            localStorage.removeItem('id_token')
+            localStorage.removeItem('user_data')
+            localStorage.removeItem('branches_data')
+            localStorage.removeItem('authz_data')
+        }
         router.push('/login')
     }
 
@@ -24,10 +33,14 @@ export default function RetailLayout({ children }: { children: React.ReactNode }
         router.push('/dashboard')
     }
 
+    // The updateAuthz utility will automatically update localStorage
+    // No need for additional useEffect since the utility runs on import
+
     // Determine current section for tour
     const getCurrentSection = () => {
         if (pathname === '/retail' || pathname === '/retail/') return 'dashboard'
         if (pathname?.startsWith('/retail/inventory')) return 'inventory'
+        if (pathname?.startsWith('/retail/purchase')) return 'purchase'
         if (pathname?.startsWith('/retail/sales')) return 'sales'
         if (pathname?.startsWith('/retail/settings')) return 'settings'
         if (pathname?.startsWith('/retail/reports')) return 'reports'
@@ -101,6 +114,20 @@ export default function RetailLayout({ children }: { children: React.ReactNode }
                                         >
                                             Inventory
                                             {pathname?.startsWith('/retail/inventory') && (
+                                                <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-400 rounded-full shadow-sm"></div>
+                                            )}
+                                        </Button>
+                                    </PageGuard>
+                                    <PageGuard tile="retail" page="purchase" fallback={<></>}>
+                                        <Button
+                                            variant="outline"
+                                            className={`${pathname?.startsWith('/retail/purchase')
+                                                ? 'h-9 px-4 text-xs font-semibold bg-white/15 border-white/25 text-white hover:bg-white/25 hover:border-white/40 relative backdrop-blur-sm'
+                                                : 'h-9 px-4 text-xs font-medium bg-transparent text-white/90 border-white/15 hover:bg-white/10 hover:border-white/30 hover:text-white backdrop-blur-sm'}`}
+                                            onClick={() => router.push('/retail/purchase')}
+                                        >
+                                            Purchase
+                                            {pathname?.startsWith('/retail/purchase') && (
                                                 <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-400 rounded-full shadow-sm"></div>
                                             )}
                                         </Button>
@@ -211,9 +238,11 @@ export default function RetailLayout({ children }: { children: React.ReactNode }
                                     pathname?.startsWith('/retail/reports') ? 'reports' :
                                         pathname?.startsWith('/retail/pos') ? 'pos' : 'dashboard'
                     } fallback={<NotAuthorized />}>
-                        <div className="min-h-screen">
-                            {children}
-                        </div>
+                        <ToastProvider>
+                            <div className="min-h-screen">
+                                {children}
+                            </div>
+                        </ToastProvider>
                     </PageGuard>
                 </div>
             </TileGuard>

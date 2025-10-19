@@ -29,6 +29,6 @@ export declare const fetchUserProfile: import("@reduxjs/toolkit").AsyncThunk<any
     fulfilledMeta?: unknown;
     rejectedMeta?: unknown;
 }>;
-export declare const clearError: import("@reduxjs/toolkit").ActionCreatorWithoutPayload<"auth/clearError">, setUser: import("@reduxjs/toolkit").ActionCreatorWithPayload<User, "auth/setUser">, setTokens: import("@reduxjs/toolkit").ActionCreatorWithPayload<any, "auth/setTokens">;
+export declare const clearError: import("@reduxjs/toolkit").ActionCreatorWithoutPayload<"auth/clearError">, setUser: import("@reduxjs/toolkit").ActionCreatorWithPayload<User, "auth/setUser">, setTokens: import("@reduxjs/toolkit").ActionCreatorWithPayload<any, "auth/setTokens">, updateAuthorizationWithPurchase: import("@reduxjs/toolkit").ActionCreatorWithoutPayload<"auth/updateAuthorizationWithPurchase">;
 declare const _default: import("redux").Reducer<AuthState>;
 export default _default;

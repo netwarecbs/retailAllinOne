@@ -3,6 +3,7 @@ import authReducer from './authSlice';
 import productReducer from './productSlice';
 import salesReducer from './salesSlice';
 import purchaseReducer from './purchaseSlice';
+import challanReducer from './challanSlice';
 
 export const store = configureStore({
   reducer: {
@@ -10,6 +11,7 @@ export const store = configureStore({
     products: productReducer,
     sales: salesReducer,
     purchase: purchaseReducer,
+    challan: challanReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

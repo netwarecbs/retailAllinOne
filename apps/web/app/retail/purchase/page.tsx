@@ -1,338 +1,512 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { Card, CardContent, CardHeader, CardTitle, Button, Input } from '@retail/ui'
-import { retailSuppliers, retailProducts } from '@retail/shared'
 import { useRouter } from 'next/navigation'
-
-interface PurchaseOrder {
-    id: string
-    supplierId: string
-    supplierName: string
-    orderDate: string
-    expectedDate: string
-    status: 'Pending' | 'Received' | 'Partial' | 'Cancelled'
-    items: PurchaseItem[]
-    totalAmount: number
-    paidAmount: number
-    balanceAmount: number
-}
-
-interface PurchaseItem {
-    productId: string
-    productName: string
-    sku: string
-    quantity: number
-    unitPrice: number
-    totalPrice: number
-}
+import { RootState, AppDispatch } from '@retail/shared'
+import {
+    setChallanSelectedVendor,
+    selectChallan,
+    deselectChallan,
+    createPurchaseBill,
+    updatePurchaseBillProduct,
+    updatePaymentEntry,
+    updateAdvanceAmount,
+    submitPurchaseBill,
+    processPurchaseBill,
+    addChallanFromStockIn,
+    selectProductForPayment,
+    updateProductPaymentStatus,
+    processPartialPayment
+} from '@retail/shared'
+import { useToast } from '../hooks/useToast'
+import VendorSelector from './components/VendorSelector'
+import PendingChallansTable from './components/PendingChallansTable'
+import ChallanProductTable from './components/ChallanProductTable'
+import PaymentEntryForm from './components/PaymentEntryForm'
+import PurchaseBillSummary from './components/PurchaseBillSummary'
 
 export default function PurchasePage() {
+    const dispatch = useDispatch<AppDispatch>()
     const router = useRouter()
-    const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([])
-    const [suppliers] = useState(retailSuppliers)
-    const [products] = useState(retailProducts)
-    const [isLoading, setIsLoading] = useState(true)
-    const [showCreateForm, setShowCreateForm] = useState(false)
-    const [selectedSupplier, setSelectedSupplier] = useState('')
-    const [newOrder, setNewOrder] = useState<Partial<PurchaseOrder>>({
-        orderDate: new Date().toISOString().split('T')[0],
-        expectedDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        status: 'Pending',
-        items: [],
-        totalAmount: 0,
-        paidAmount: 0,
-        balanceAmount: 0
-    })
+    const { showSuccess, showError, showWarning, showInfo } = useToast()
 
+    const {
+        selectedVendor,
+        pendingChallans,
+        selectedChallans,
+        currentPurchaseBill,
+        paymentHistory,
+        loading,
+        challans
+    } = useSelector((state: RootState) => state.challan)
+
+    const { vendors } = useSelector((state: RootState) => state.products)
+
+    const [showVendorModal, setShowVendorModal] = useState(false)
+    const [vendorSearchTerm, setVendorSearchTerm] = useState('')
+    const [billNo, setBillNo] = useState('')
+    const [billDate, setBillDate] = useState(new Date().toLocaleDateString('en-GB'))
+
+    // Debug: Log when pending challans change
     useEffect(() => {
-        // Simulate loading
-        const timer = setTimeout(() => {
-            setIsLoading(false)
-            // Load sample purchase orders
-            setPurchaseOrders([
-                {
-                    id: 'PO001',
-                    supplierId: 'SUP001',
-                    supplierName: 'Sunrise Distributors',
-                    orderDate: '2024-01-15',
-                    expectedDate: '2024-01-22',
-                    status: 'Pending',
-                    items: [
-                        { productId: 'RT001', productName: 'Parle-G Biscuit 100g', sku: 'RT001', quantity: 50, unitPrice: 6, totalPrice: 300 },
-                        { productId: 'RT002', productName: 'Colgate Toothpaste 150g', sku: 'RT002', quantity: 25, unitPrice: 40, totalPrice: 1000 }
-                    ],
-                    totalAmount: 1300,
-                    paidAmount: 0,
-                    balanceAmount: 1300
-                },
-                {
-                    id: 'PO002',
-                    supplierId: 'SUP002',
-                    supplierName: 'Retail Supplies India',
-                    orderDate: '2024-01-10',
-                    expectedDate: '2024-01-17',
-                    status: 'Received',
-                    items: [
-                        { productId: 'RT003', productName: 'Dettol Handwash 200ml', sku: 'RT003', quantity: 20, unitPrice: 50, totalPrice: 1000 }
-                    ],
-                    totalAmount: 1000,
-                    paidAmount: 1000,
-                    balanceAmount: 0
-                }
-            ])
-        }, 1000)
+        console.log('Pending challans updated:', pendingChallans)
+        console.log('Selected vendor:', selectedVendor)
+    }, [pendingChallans, selectedVendor])
 
-        return () => clearTimeout(timer)
+    // Debug: Log initial state when component mounts
+    useEffect(() => {
+        console.log('Purchase page mounted - Initial state:')
+        console.log('All challans:', challans)
+        console.log('Pending challans:', pendingChallans)
+        console.log('Selected vendor:', selectedVendor)
     }, [])
 
-    const handleCreateOrder = () => {
-        if (!selectedSupplier) return
-
-        const supplier = suppliers.find(s => s.id === selectedSupplier)
-        if (!supplier) return
-
-        const newPurchaseOrder: PurchaseOrder = {
-            id: `PO${String(purchaseOrders.length + 1).padStart(3, '0')}`,
-            supplierId: selectedSupplier,
-            supplierName: supplier.name,
-            orderDate: newOrder.orderDate || new Date().toISOString().split('T')[0],
-            expectedDate: newOrder.expectedDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-            status: 'Pending',
-            items: [],
-            totalAmount: 0,
-            paidAmount: 0,
-            balanceAmount: 0
-        }
-
-        setPurchaseOrders([...purchaseOrders, newPurchaseOrder])
-        setShowCreateForm(false)
-        setSelectedSupplier('')
-        setNewOrder({
-            orderDate: new Date().toISOString().split('T')[0],
-            expectedDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-            status: 'Pending',
-            items: [],
-            totalAmount: 0,
-            paidAmount: 0,
-            balanceAmount: 0
-        })
+    const handleVendorSelect = (vendorId: string) => {
+        console.log('Selected vendor ID:', vendorId, 'Type:', typeof vendorId)
+        console.log('All challans in store:', challans)
+        console.log('Challans for this vendor:', challans.filter(c => c.vendorId === vendorId))
+        dispatch(setChallanSelectedVendor(vendorId))
+        setShowVendorModal(false)
+        setVendorSearchTerm('')
+        showInfo('Vendor Selected', `Selected vendor with ${pendingChallans.length} pending challans`)
     }
 
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case 'Pending': return 'bg-yellow-100 text-yellow-800'
-            case 'Received': return 'bg-green-100 text-green-800'
-            case 'Partial': return 'bg-blue-100 text-blue-800'
-            case 'Cancelled': return 'bg-red-100 text-red-800'
-            default: return 'bg-gray-100 text-gray-800'
+    // Debug function to add a test challan
+    const addTestChallan = () => {
+        console.log('Adding test challan for SUP001')
+        dispatch(addChallanFromStockIn({
+            id: `TEST-${Date.now()}`,
+            vendorId: 'SUP001',
+            vendorName: 'Sunrise Distributors',
+            challanDate: new Date().toLocaleDateString('en-GB'),
+            challanNo: `TEST-${Date.now()}`,
+            transportName: 'Test Transport',
+            transportNo: 'TT001',
+            transportCharges: 100,
+            products: [{
+                productId: 'TEST-PROD',
+                productName: 'Test Product',
+                qty: 10,
+                unitPrice: 50,
+                totalPrice: 500,
+                batchNo: 'BATCH001',
+                mfDate: new Date().toLocaleDateString('en-GB'),
+                expDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toLocaleDateString('en-GB')
+            }],
+            totalAmount: 500
+        }))
+        showSuccess('Test Challan Added', 'Test challan created for Sunrise Distributors')
+    }
+
+    const handleChallanSelect = (challanId: string) => {
+        dispatch(selectChallan(challanId))
+        showInfo('Challan Selected', 'Challan added to selection')
+    }
+
+    const handleChallanDeselect = (challanId: string) => {
+        dispatch(deselectChallan(challanId))
+        showInfo('Challan Deselected', 'Challan removed from selection')
+    }
+
+    const handleCreateBill = () => {
+        if (!billNo || !billDate) {
+            showError('Missing Information', 'Please fill in bill number and date')
+            return
+        }
+
+        dispatch(createPurchaseBill({
+            billNo,
+            billDate,
+            challanIds: selectedChallans
+        }))
+
+        showSuccess('Purchase Bill Created', 'Bill created successfully')
+    }
+
+    const handleSubmitBill = () => {
+        if (currentPurchaseBill) {
+            // Update inventory stock
+            dispatch(processPurchaseBill({
+                products: currentPurchaseBill.products.map(product => ({
+                    productId: product.productId,
+                    quantity: product.quantity,
+                    unitPrice: product.unitPrice
+                }))
+            }))
+
+            // Submit the purchase bill
+            dispatch(submitPurchaseBill())
+
+            // Show success message
+            showSuccess('Purchase Bill Submitted', 'Bill has been submitted successfully')
+
+            // Reset form
+            setBillNo('')
+            setBillDate(new Date().toLocaleDateString('en-GB'))
         }
     }
 
-    if (isLoading) {
+    const handleProductSelection = (productId: string, isSelected: boolean) => {
+        // Find the challan and product to update
+        const challan = pendingChallans.find(c =>
+            c.products.some(p => p.productId === productId)
+        )
+
+        if (challan) {
+            dispatch(selectProductForPayment({
+                challanId: challan.id,
+                productId,
+                isSelected
+            }))
+        }
+    }
+
+    const handlePartialPayment = (productId: string, paymentData: any) => {
+        // Find the challan and product to update
+        const challan = pendingChallans.find(c =>
+            c.products.some(p => p.productId === productId)
+        )
+
+        if (challan) {
+            dispatch(processPartialPayment({
+                challanId: challan.id,
+                productId,
+                paymentAmount: paymentData.amount,
+                paymentMethods: paymentData.paymentMethods,
+                paymentDate: paymentData.paymentDate,
+                reference: paymentData.reference
+            }))
+
+            showSuccess('Partial Payment Processed', `Payment of ₹${paymentData.amount} processed for product`)
+        }
+    }
+
+    const selectedVendorData = vendors.find(v => v.id === selectedVendor)
+
+    if (loading) {
         return (
-            <div className="space-y-6">
-                <Card>
-                    <CardHeader>
-                        <div className="h-6 bg-gray-200 rounded w-48 animate-pulse"></div>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-4">
-                            {[1, 2, 3].map(i => (
-                                <div key={i} className="h-16 bg-gray-200 rounded animate-pulse"></div>
-                            ))}
+            <div className="min-h-screen bg-gray-50">
+                <main className="container mx-auto px-4 py-4">
+                    <div className="animate-pulse space-y-4">
+                        <div className="h-8 bg-gray-200 rounded w-64"></div>
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                            <div className="lg:col-span-1 space-y-4">
+                                <div className="h-32 bg-gray-200 rounded"></div>
+                                <div className="h-48 bg-gray-200 rounded"></div>
+                            </div>
+                            <div className="lg:col-span-2 space-y-4">
+                                <div className="h-64 bg-gray-200 rounded"></div>
+                            </div>
                         </div>
-                    </CardContent>
-                </Card>
+                    </div>
+                </main>
             </div>
         )
     }
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                <div className="space-y-6">
-                    {/* Header */}
-                    <div className="flex justify-between items-center">
-                        <div>
-                            <h2 className="text-2xl font-bold text-gray-900">Purchase Management</h2>
-                            <p className="text-gray-600">Manage purchase orders and supplier relationships</p>
-                        </div>
-                        <div className="flex space-x-3">
+            <main className="container mx-auto px-3 py-2">
+                {/* Compact Header */}
+                <div className="mb-3">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
                             <Button
                                 variant="outline"
-                                onClick={() => setShowCreateForm(true)}
-                                className="bg-orange-50 hover:bg-orange-100 border-orange-200 text-orange-700"
+                                size="sm"
+                                onClick={() => router.push('/retail')}
+                                className="flex items-center space-x-1 text-xs h-7"
                             >
-                                + Create Purchase Order
+                                <span>←</span>
+                                <span>Back</span>
                             </Button>
+                            <div>
+                                <h1 className="text-lg font-semibold text-gray-900">Purchase Management</h1>
+                                <p className="text-xs text-gray-600">Create purchase bills from pending challans</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
                             <Button
-                                onClick={() => router.push('/retail/purchase/suppliers')}
-                                className="bg-blue-600 hover:bg-blue-700"
+                                onClick={addTestChallan}
+                                size="sm"
+                                className="bg-yellow-600 hover:bg-yellow-700 text-xs h-7"
                             >
-                                Manage Suppliers
+                                Test Challan
                             </Button>
                         </div>
                     </div>
+                </div>
 
-                    {/* Create Order Modal */}
-                    {showCreateForm && (
-                        <Card className="border-2 border-orange-200">
-                            <CardHeader className="bg-orange-50">
-                                <CardTitle className="text-orange-800">Create New Purchase Order</CardTitle>
+                {/* Compact Grid Layout */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+                    {/* Left Column - Vendor & Challans */}
+                    <div className="lg:col-span-1 space-y-3">
+                        {/* Compact Vendor Selection */}
+                        <Card className="h-fit">
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-xs font-medium">Vendor Selection</CardTitle>
                             </CardHeader>
-                            <CardContent className="p-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Select Supplier</label>
-                                        <select
-                                            value={selectedSupplier}
-                                            onChange={(e) => setSelectedSupplier(e.target.value)}
-                                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                                        >
-                                            <option value="">Choose a supplier</option>
-                                            {suppliers.map(supplier => (
-                                                <option key={supplier.id} value={supplier.id}>
-                                                    {supplier.name} - {supplier.contact}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Expected Delivery Date</label>
-                                        <Input
-                                            type="date"
-                                            value={newOrder.expectedDate}
-                                            onChange={(e) => setNewOrder({ ...newOrder, expectedDate: e.target.value })}
-                                        />
-                                    </div>
-                                </div>
-                                <div className="flex justify-end space-x-3 mt-6">
+                            <CardContent className="space-y-2 p-3">
+                                <div className="flex space-x-2">
+                                    <Input
+                                        placeholder="Search vendor..."
+                                        value={vendorSearchTerm}
+                                        onChange={(e) => setVendorSearchTerm(e.target.value)}
+                                        className="flex-1 text-xs h-7"
+                                    />
                                     <Button
-                                        variant="outline"
-                                        onClick={() => setShowCreateForm(false)}
+                                        onClick={() => setShowVendorModal(true)}
+                                        size="sm"
+                                        className="bg-blue-600 hover:bg-blue-700 text-xs h-7"
                                     >
-                                        Cancel
-                                    </Button>
-                                    <Button
-                                        onClick={handleCreateOrder}
-                                        disabled={!selectedSupplier}
-                                        className="bg-orange-600 hover:bg-orange-700"
-                                    >
-                                        Create Order
+                                        Search
                                     </Button>
                                 </div>
+
+                                {selectedVendor && (
+                                    <div className="bg-gray-50 p-2 rounded">
+                                        <div className="text-xs">
+                                            <p className="font-medium text-gray-900">
+                                                {vendors.find(v => v.id === selectedVendor)?.name}
+                                            </p>
+                                            <p className="text-xs text-gray-600">
+                                                {pendingChallans.length} pending challans
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
-                    )}
 
-                    {/* Purchase Orders List */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Purchase Orders</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="overflow-x-auto">
-                                <table className="w-full">
-                                    <thead>
-                                        <tr className="border-b">
-                                            <th className="text-left py-2 px-3 font-medium text-gray-600 text-xs">Order ID</th>
-                                            <th className="text-left py-2 px-3 font-medium text-gray-600 text-xs">Supplier</th>
-                                            <th className="text-left py-2 px-3 font-medium text-gray-600 text-xs">Order Date</th>
-                                            <th className="text-left py-2 px-3 font-medium text-gray-600 text-xs">Expected Date</th>
-                                            <th className="text-left py-2 px-3 font-medium text-gray-600 text-xs">Status</th>
-                                            <th className="text-left py-2 px-3 font-medium text-gray-600 text-xs">Total Amount</th>
-                                            <th className="text-left py-2 px-3 font-medium text-gray-600 text-xs">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {purchaseOrders.map((order) => (
-                                            <tr key={order.id} className="border-b hover:bg-gray-50">
-                                                <td className="py-2 px-3 font-medium text-sm">{order.id}</td>
-                                                <td className="py-2 px-3 text-sm">{order.supplierName}</td>
-                                                <td className="py-2 px-3 text-sm">{order.orderDate}</td>
-                                                <td className="py-2 px-3 text-sm">{order.expectedDate}</td>
-                                                <td className="py-2 px-3">
-                                                    <span className={`px-1.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
-                                                        {order.status}
-                                                    </span>
-                                                </td>
-                                                <td className="py-2 px-3 font-semibold text-sm">₹{order.totalAmount.toLocaleString()}</td>
-                                                <td className="py-2 px-3">
-                                                    <div className="flex space-x-1">
-                                                        <Button size="sm" variant="outline" className="text-xs px-2 py-1">View</Button>
-                                                        <Button size="sm" variant="outline" className="text-xs px-2 py-1">Edit</Button>
-                                                        {order.status === 'Pending' && (
-                                                            <Button size="sm" className="bg-green-600 hover:bg-green-700 text-xs px-2 py-1">
-                                                                Receive
-                                                            </Button>
-                                                        )}
+                        {/* Compact Pending Challans */}
+                        {selectedVendor && (
+                            <Card className="h-fit">
+                                <CardHeader className="pb-2">
+                                    <CardTitle className="text-xs font-medium">
+                                        Pending Challans ({pendingChallans.length})
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="p-2">
+                                    <div className="space-y-1 max-h-48 overflow-y-auto">
+                                        {pendingChallans.map((challan) => (
+                                            <div
+                                                key={challan.id}
+                                                className={`p-2 border rounded cursor-pointer transition-colors ${selectedChallans.includes(challan.id)
+                                                    ? 'bg-blue-50 border-blue-200'
+                                                    : 'bg-white border-gray-200 hover:bg-gray-50'
+                                                    }`}
+                                                onClick={() => handleChallanSelect(challan.id)}
+                                            >
+                                                <div className="flex justify-between items-start">
+                                                    <div>
+                                                        <p className="text-xs font-medium">{challan.challanNo}</p>
+                                                        <p className="text-xs text-gray-600">{challan.challanDate}</p>
                                                     </div>
-                                                </td>
-                                            </tr>
+                                                    <div className="text-right">
+                                                        <p className="text-xs font-medium">₹{challan.totalAmount.toLocaleString()}</p>
+                                                        <p className="text-xs text-gray-600">{challan.products.length} items</p>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </CardContent>
-                    </Card>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        )}
+                    </div>
 
-                    {/* Quick Stats */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <Card>
-                            <CardContent className="p-4">
-                                <div className="flex items-center">
-                                    <div className="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
-                                        <span className="text-yellow-600 text-sm">📋</span>
+                    {/* Right Column - Products & Payment */}
+                    <div className="lg:col-span-2 space-y-3">
+                        {/* Bill Creation */}
+                        {selectedChallans.length > 0 && !currentPurchaseBill && (
+                            <Card>
+                                <CardHeader className="pb-2">
+                                    <CardTitle className="text-xs font-medium">Create Purchase Bill</CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-3 p-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        <div>
+                                            <label className="block text-xs font-medium text-gray-700 mb-1">
+                                                Bill No *
+                                            </label>
+                                            <Input
+                                                value={billNo}
+                                                onChange={(e) => setBillNo(e.target.value)}
+                                                placeholder="Enter bill number"
+                                                className="text-xs h-7"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-medium text-gray-700 mb-1">
+                                                Bill Date *
+                                            </label>
+                                            <Input
+                                                type="date"
+                                                value={billDate}
+                                                onChange={(e) => setBillDate(e.target.value)}
+                                                className="text-xs h-7"
+                                            />
+                                        </div>
                                     </div>
-                                    <div className="ml-3">
-                                        <p className="text-sm text-gray-600">Total Orders</p>
-                                        <p className="text-xl font-semibold">{purchaseOrders.length}</p>
+                                    <div className="flex justify-end">
+                                        <Button
+                                            onClick={handleCreateBill}
+                                            size="sm"
+                                            className="bg-blue-600 hover:bg-blue-700 text-xs h-7"
+                                        >
+                                            Create Bill
+                                        </Button>
                                     </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="p-4">
-                                <div className="flex items-center">
-                                    <div className="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
-                                        <span className="text-yellow-600 text-sm">⏳</span>
+                                </CardContent>
+                            </Card>
+                        )}
+
+                        {/* Selected Challan Products */}
+                        {currentPurchaseBill && (
+                            <Card>
+                                <CardHeader className="pb-2">
+                                    <CardTitle className="text-xs font-medium">
+                                        Selected Products ({currentPurchaseBill.products.length} items)
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="p-2">
+                                    <ChallanProductTable
+                                        products={currentPurchaseBill.products}
+                                        onProductUpdate={(productId, field, value) =>
+                                            dispatch(updatePurchaseBillProduct({ productId, field, value }))
+                                        }
+                                        onProductSelection={handleProductSelection}
+                                        onPartialPayment={handlePartialPayment}
+                                        showSelection={true}
+                                        showPaymentStatus={true}
+                                    />
+                                </CardContent>
+                            </Card>
+                        )}
+
+                        {/* Payment & Bill Summary */}
+                        {currentPurchaseBill && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                {/* Payment Entry */}
+                                <Card>
+                                    <CardHeader className="pb-2">
+                                        <CardTitle className="text-xs font-medium">Payment Details</CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="p-2">
+                                        <PaymentEntryForm
+                                            paymentEntry={currentPurchaseBill.paymentEntry}
+                                            remainingAmount={currentPurchaseBill.remainingAmount}
+                                            advanceAmount={currentPurchaseBill.advanceAmount}
+                                            onPaymentUpdate={(paymentData) =>
+                                                dispatch(updatePaymentEntry(paymentData))
+                                            }
+                                            onAdvanceUpdate={(amount) =>
+                                                dispatch(updateAdvanceAmount(amount))
+                                            }
+                                        />
+                                    </CardContent>
+                                </Card>
+
+                                {/* Bill Summary */}
+                                <Card>
+                                    <CardHeader className="pb-2">
+                                        <CardTitle className="text-xs font-medium">Bill Summary</CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="p-2">
+                                        <PurchaseBillSummary
+                                            totals={currentPurchaseBill.totals}
+                                            remainingAmount={currentPurchaseBill.remainingAmount}
+                                            onSubmit={handleSubmitBill}
+                                        />
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        )}
+
+                        {/* Payment History */}
+                        {paymentHistory.length > 0 && (
+                            <Card>
+                                <CardHeader className="pb-2">
+                                    <CardTitle className="text-xs font-medium">Recent Payments</CardTitle>
+                                </CardHeader>
+                                <CardContent className="p-2">
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-xs">
+                                            <thead>
+                                                <tr className="border-b">
+                                                    <th className="text-left py-1 px-1 text-xs font-medium text-gray-600">Date</th>
+                                                    <th className="text-left py-1 px-1 text-xs font-medium text-gray-600">Invoice</th>
+                                                    <th className="text-left py-1 px-1 text-xs font-medium text-gray-600">Vendor</th>
+                                                    <th className="text-left py-1 px-1 text-xs font-medium text-gray-600">Amount</th>
+                                                    <th className="text-left py-1 px-1 text-xs font-medium text-gray-600">Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {paymentHistory.slice(0, 5).map((payment, index) => (
+                                                    <tr key={index} className="border-b hover:bg-gray-50">
+                                                        <td className="py-1 px-1 text-xs">{payment.actionDate}</td>
+                                                        <td className="py-1 px-1 text-xs">{payment.taxInvoiceNo}</td>
+                                                        <td className="py-1 px-1 text-xs">{payment.vendorDescription}</td>
+                                                        <td className="py-1 px-1 text-xs">₹{payment.amount.toLocaleString()}</td>
+                                                        <td className="py-1 px-1 text-xs">
+                                                            <span className="px-1 py-0.5 bg-green-100 text-green-800 rounded text-xs">
+                                                                {payment.operation}
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
                                     </div>
-                                    <div className="ml-3">
-                                        <p className="text-sm text-gray-600">Pending</p>
-                                        <p className="text-xl font-semibold">{purchaseOrders.filter(o => o.status === 'Pending').length}</p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="p-4">
-                                <div className="flex items-center">
-                                    <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                                        <span className="text-green-600 text-sm">✅</span>
-                                    </div>
-                                    <div className="ml-3">
-                                        <p className="text-sm text-gray-600">Received</p>
-                                        <p className="text-xl font-semibold">{purchaseOrders.filter(o => o.status === 'Received').length}</p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="p-4">
-                                <div className="flex items-center">
-                                    <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                                        <span className="text-blue-600 text-sm">💰</span>
-                                    </div>
-                                    <div className="ml-3">
-                                        <p className="text-sm text-gray-600">Total Value</p>
-                                        <p className="text-xl font-semibold">₹{purchaseOrders.reduce((sum, o) => sum + o.totalAmount, 0).toLocaleString()}</p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
+                                </CardContent>
+                            </Card>
+                        )}
                     </div>
                 </div>
+
+                {/* Vendor Search Modal */}
+                {showVendorModal && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-white rounded-lg p-4 w-full max-w-2xl max-h-96 overflow-hidden">
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="text-lg font-medium">Select Vendor</h3>
+                                <Button
+                                    onClick={() => setShowVendorModal(false)}
+                                    variant="outline"
+                                    size="sm"
+                                >
+                                    ✕
+                                </Button>
+                            </div>
+
+                            <div className="space-y-2 max-h-64 overflow-y-auto">
+                                {vendors.filter(vendor =>
+                                    vendor.name.toLowerCase().includes(vendorSearchTerm.toLowerCase()) ||
+                                    vendor.contact?.toLowerCase().includes(vendorSearchTerm.toLowerCase())
+                                ).map(vendor => (
+                                    <div
+                                        key={vendor.id}
+                                        className="p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
+                                        onClick={() => handleVendorSelect(vendor.id)}
+                                    >
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <p className="font-medium text-sm">{vendor.name}</p>
+                                                <p className="text-xs text-gray-600">{vendor.address}</p>
+                                                <p className="text-xs text-gray-500">Contact: {vendor.contact}</p>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-xs text-gray-500">ID: {vendor.id}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                )}
             </main>
         </div>
     )

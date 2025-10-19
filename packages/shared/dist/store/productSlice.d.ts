@@ -83,6 +83,12 @@ export declare const setLoading: import("@reduxjs/toolkit").ActionCreatorWithPay
 }, "products/updateVendor">, deleteVendor: import("@reduxjs/toolkit").ActionCreatorWithPayload<string, "products/deleteVendor">, addCustomer: import("@reduxjs/toolkit").ActionCreatorWithPayload<Customer, "products/addCustomer">, updateCustomer: import("@reduxjs/toolkit").ActionCreatorWithPayload<{
     id: string;
     updates: Partial<Customer>;
-}, "products/updateCustomer">, deleteCustomer: import("@reduxjs/toolkit").ActionCreatorWithPayload<string, "products/deleteCustomer">;
+}, "products/updateCustomer">, deleteCustomer: import("@reduxjs/toolkit").ActionCreatorWithPayload<string, "products/deleteCustomer">, processPurchaseBill: import("@reduxjs/toolkit").ActionCreatorWithPayload<{
+    products: Array<{
+        productId: string;
+        quantity: number;
+        unitPrice: number;
+    }>;
+}, "products/processPurchaseBill">;
 declare const _default: import("redux").Reducer<ProductState>;
 export default _default;

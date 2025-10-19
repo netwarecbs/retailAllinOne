@@ -49,7 +49,7 @@ export type TileKey = 'garment' | 'pharmacy' | 'retail';
 
 export type GarmentPageKey = 'dashboard' | 'purchase' | 'inventory' | 'sales' | 'pos';
 export type PharmacyPageKey = 'dashboard';
-export type RetailPageKey = 'dashboard' | 'inventory' | 'sales' | 'customers' | 'reports' | 'pos';
+export type RetailPageKey = 'dashboard' | 'inventory' | 'purchase' | 'sales' | 'customers' | 'reports' | 'pos';
 export type PageKey = GarmentPageKey | PharmacyPageKey | RetailPageKey;
 
 export interface AuthorizationActionMap {

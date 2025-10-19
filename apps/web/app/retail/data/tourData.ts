@@ -171,6 +171,59 @@ export const tourSections: TourSection[] = [
         ]
     },
     {
+        id: 'purchase',
+        name: 'Purchase Management',
+        description: 'Manage purchase bills, vendor challans, and inventory procurement',
+        icon: '🛒',
+        route: '/retail/purchase',
+        version: '1.0.0',
+        lastUpdated: '2024-01-22',
+        steps: [
+            {
+                id: 'purchase-overview',
+                title: 'Purchase Dashboard',
+                description: 'Create purchase bills from vendor challans and manage procurement processes.',
+                target: '.purchase-header',
+                position: 'bottom'
+            },
+            {
+                id: 'purchase-vendor',
+                title: 'Vendor Selection',
+                description: 'Select vendors to view their pending challans and create purchase bills.',
+                target: '.vendor-selector',
+                position: 'top'
+            },
+            {
+                id: 'purchase-challans',
+                title: 'Pending Challans',
+                description: 'View and select challans from the selected vendor to create purchase bills.',
+                target: '.challans-table',
+                position: 'top'
+            },
+            {
+                id: 'purchase-products',
+                title: 'Product Details',
+                description: 'Review and edit product quantities, rates, and tax calculations.',
+                target: '.product-table',
+                position: 'top'
+            },
+            {
+                id: 'purchase-payment',
+                title: 'Payment Entry',
+                description: 'Enter payment details with multiple transaction types (Cash, Cheque, Credit, Discount).',
+                target: '.payment-form',
+                position: 'top'
+            },
+            {
+                id: 'purchase-submit',
+                title: 'Submit Purchase Bill',
+                description: 'Finalize and submit the purchase bill to update inventory stock.',
+                target: '.bill-summary',
+                position: 'top'
+            }
+        ]
+    },
+    {
         id: 'settings',
         name: 'Settings & Configuration',
         description: 'Configure your retail system, manage master data, and set up preferences',

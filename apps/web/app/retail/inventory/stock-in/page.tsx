@@ -11,8 +11,10 @@ import {
   addVendor,
   updateStock,
   setLoading,
-  setError
+  setError,
+  addChallanFromStockIn
 } from '@retail/shared'
+import { useToast } from '../../hooks/useToast'
 
 interface StockInForm {
   challanDate: string
@@ -41,6 +43,7 @@ interface StockInProduct {
 export default function StockInPage() {
   const dispatch = useDispatch<AppDispatch>()
   const router = useRouter()
+  const { showSuccess, showError, showWarning, showInfo } = useToast()
   const { products, vendors, stockInRecords, selectedVendor, loading } = useSelector((state: RootState) => state.products)
 
   const [form, setForm] = useState<StockInForm>({
@@ -114,7 +117,7 @@ export default function StockInPage() {
         setProductSearchTerm(product.name)
         setShowProductSuggestions(false)
       } else {
-        alert('Product not found with this barcode')
+        showError('Product Not Found', 'No product found with this barcode')
       }
     }
   }
@@ -187,17 +190,17 @@ export default function StockInPage() {
 
   const handleSubmit = () => {
     if (!selectedVendor) {
-      alert('Please select a vendor first')
+      showError('Vendor Required', 'Please select a vendor first')
       return
     }
 
     if (form.challanNo === '') {
-      alert('Please enter challan number')
+      showError('Challan Number Required', 'Please enter challan number')
       return
     }
 
     if (form.products.some(p => p.productId === '' || p.qty === 0)) {
-      alert('Please fill in all product details')
+      showError('Product Details Required', 'Please fill in all product details')
       return
     }
 
@@ -220,6 +223,25 @@ export default function StockInPage() {
     }
 
     dispatch(addStockInRecord(stockInRecord))
+
+    // Also create a challan for the purchase page
+    console.log('Creating challan for vendor:', {
+      vendorId: stockInRecord.vendorId,
+      vendorName: stockInRecord.vendorName,
+      challanNo: stockInRecord.challanNo
+    })
+    dispatch(addChallanFromStockIn({
+      id: stockInRecord.id,
+      vendorId: stockInRecord.vendorId,
+      vendorName: stockInRecord.vendorName,
+      challanDate: stockInRecord.challanDate,
+      challanNo: stockInRecord.challanNo,
+      transportName: stockInRecord.transportName,
+      transportNo: stockInRecord.transportNo,
+      transportCharges: stockInRecord.transportCharges,
+      products: stockInRecord.products,
+      totalAmount: stockInRecord.totalAmount
+    }))
 
     // Reset form
     setForm({
@@ -245,7 +267,7 @@ export default function StockInPage() {
     })
 
     dispatch(setSelectedVendor(null))
-    alert('Stock-in record added successfully!')
+    showSuccess('Stock-in Record Added', 'Record has been added successfully and challan created for purchase page')
   }
 
   const filteredRecords = stockInRecords.filter(record =>
@@ -399,7 +421,7 @@ export default function StockInPage() {
                           type="date"
                           value={form.challanDate}
                           onChange={(e) => setForm({ ...form, challanDate: e.target.value })}
-                          className="w-full text-sm"
+                          className="w-full text-xs py-0.5 px-2 h-7"
                         />
                       </div>
                       <div>
@@ -446,144 +468,207 @@ export default function StockInPage() {
                 </div>
 
                 {/* Product Details */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-900">Product Details</h3>
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="bg-orange-100">
-                          <th className="text-left py-2 px-3 font-medium text-gray-600 text-xs">Sl No.</th>
-                          <th className="text-left py-2 px-3 font-medium text-gray-600 text-xs">Product *</th>
-                          <th className="text-left py-2 px-3 font-medium text-gray-600 text-xs">In Stock</th>
-                          <th className="text-left py-2 px-3 font-medium text-gray-600 text-xs">Qty*</th>
-                          <th className="text-left py-2 px-3 font-medium text-gray-600 text-xs">Batch No</th>
-                          <th className="text-left py-2 px-3 font-medium text-gray-600 text-xs">Mf. Date</th>
-                          <th className="text-left py-2 px-3 font-medium text-gray-600 text-xs">Exp Date</th>
-                          <th className="text-left py-2 px-3 font-medium text-gray-600 text-xs">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {form.products.map((product, index) => (
-                          <tr key={index} className="border-b">
-                            <td className="py-2 px-3 text-sm">{product.slNo}</td>
-                            <td className="py-2 px-3">
-                              <div className="relative">
-                                <div className="flex space-x-1">
-                                  <Input
-                                    placeholder="Search product or scan barcode"
-                                    value={product.productName || productSearchTerm}
-                                    onChange={(e) => {
-                                      handleProductSearch(e.target.value)
-                                      // Clear the selected product if user starts typing
-                                      if (product.productName && e.target.value !== product.productName) {
-                                        const updatedProducts = [...form.products]
-                                        updatedProducts[index] = {
-                                          ...updatedProducts[index],
-                                          productId: '',
-                                          productName: '',
-                                          inStock: 0,
-                                          unitPrice: 0
-                                        }
-                                        setForm({ ...form, products: updatedProducts })
-                                      }
-                                    }}
-                                    onFocus={() => setShowProductSuggestions(true)}
-                                    className="flex-1 text-sm"
-                                  />
-                                  <Button
-                                    type="button"
-                                    onClick={handleBarcodeScan}
-                                    size="sm"
-                                    className="bg-blue-600 hover:bg-blue-700 text-xs px-2 py-1"
-                                  >
-                                    📷
-                                  </Button>
-                                </div>
-                                {showProductSuggestions && filteredProducts.length > 0 && (
-                                  <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-40 overflow-y-auto">
-                                    {filteredProducts.slice(0, 5).map((p) => (
-                                      <div
-                                        key={p.sku}
-                                        className="px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm border-b"
-                                        onClick={() => handleProductSelect(index, p)}
-                                      >
-                                        <div className="font-medium">{p.name}</div>
-                                        <div className="text-xs text-gray-500">SKU: {p.sku} | Stock: {p.stock}</div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-                            </td>
-                            <td className="py-2 px-3 text-sm">{product.inStock}</td>
-                            <td className="py-2 px-3">
-                              <Input
-                                type="number"
-                                value={product.qty}
-                                onChange={(e) => handleQuantityChange(index, parseInt(e.target.value) || 0)}
-                                className="w-20"
-                              />
-                            </td>
-                            <td className="py-2 px-3">
-                              <Input
-                                value={product.batchNo}
-                                onChange={(e) => {
-                                  const updatedProducts = [...form.products]
-                                  updatedProducts[index].batchNo = e.target.value
-                                  setForm({ ...form, products: updatedProducts })
-                                }}
-                                className="w-24"
-                              />
-                            </td>
-                            <td className="py-2 px-3">
-                              <Input
-                                type="date"
-                                value={product.mfDate || ''}
-                                onChange={(e) => {
-                                  const updatedProducts = [...form.products]
-                                  updatedProducts[index].mfDate = e.target.value
-                                  setForm({ ...form, products: updatedProducts })
-                                }}
-                                className="w-28 text-sm"
-                              />
-                            </td>
-                            <td className="py-2 px-3">
-                              <Input
-                                type="date"
-                                value={product.expDate || ''}
-                                onChange={(e) => {
-                                  const updatedProducts = [...form.products]
-                                  updatedProducts[index].expDate = e.target.value
-                                  setForm({ ...form, products: updatedProducts })
-                                }}
-                                className="w-28 text-sm"
-                              />
-                            </td>
-                            <td className="py-2 px-3">
-                              <div className="flex space-x-1">
-                                <Button
-                                  size="sm"
-                                  onClick={addProductRow}
-                                  className="bg-green-600 hover:bg-green-700 text-xs px-2 py-1"
-                                >
-                                  +
-                                </Button>
-                                {form.products.length > 1 && (
-                                  <Button
-                                    size="sm"
-                                    onClick={() => removeProductRow(index)}
-                                    className="bg-red-600 hover:bg-red-700 text-xs px-2 py-1"
-                                  >
-                                    -
-                                  </Button>
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                <div className="space-y-3">
+                  <h3 className="text-base font-semibold text-gray-900">Product Details</h3>
+
+                  {/* Header Row */}
+                  <div className="grid grid-cols-8 gap-1 bg-orange-100 px-2 py-1.5 rounded-md">
+                    <div className="text-xs font-medium text-gray-600">Product *</div>
+                    <div className="text-xs font-medium text-gray-600">Stock</div>
+                    <div className="text-xs font-medium text-gray-600">Qty*</div>
+                    <div className="text-xs font-medium text-gray-600">Batch</div>
+                    <div className="text-xs font-medium text-gray-600">Mf. Date</div>
+                    <div className="text-xs font-medium text-gray-600">Exp Date</div>
+                    <div className="text-xs font-medium text-gray-600">Actions</div>
+                    <div className="text-xs font-medium text-gray-600">+/-</div>
                   </div>
+
+                  {/* Product Rows */}
+                  <div className="space-y-1">
+                    {form.products.map((product, index) => (
+                      <div key={index} className="grid grid-cols-8 gap-1 px-2 py-1.5 border border-gray-200 rounded-md bg-white hover:bg-gray-50 transition-colors">
+                        {/* Product Selection */}
+                        <div className="relative">
+                          <Input
+                            placeholder="Search product..."
+                            value={product.productName || productSearchTerm}
+                            onChange={(e) => {
+                              handleProductSearch(e.target.value)
+                              // Clear the selected product if user starts typing
+                              if (product.productName && e.target.value !== product.productName) {
+                                const updatedProducts = [...form.products]
+                                updatedProducts[index] = {
+                                  ...updatedProducts[index],
+                                  productId: '',
+                                  productName: '',
+                                  inStock: 0,
+                                  unitPrice: 0
+                                }
+                                setForm({ ...form, products: updatedProducts })
+                              }
+                            }}
+                            onFocus={() => setShowProductSuggestions(true)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Escape') {
+                                setShowProductSuggestions(false)
+                              }
+                            }}
+                            className="w-full text-xs py-0.5 px-2 h-7"
+                          />
+                          {showProductSuggestions && filteredProducts.length > 0 && (
+                            <div className="absolute z-50 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-32 overflow-y-auto mt-1">
+                              {filteredProducts.slice(0, 5).map((p) => (
+                                <div
+                                  key={p.sku}
+                                  className="px-2 py-1.5 hover:bg-gray-100 cursor-pointer text-xs border-b last:border-b-0"
+                                  onMouseDown={(e) => {
+                                    e.preventDefault()
+                                    handleProductSelect(index, p)
+                                    setShowProductSuggestions(false)
+                                  }}
+                                >
+                                  <div className="font-medium text-xs">{p.name}</div>
+                                  <div className="text-xs text-gray-500">SKU: {p.sku} | Stock: {p.stock}</div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* In Stock */}
+                        <div className="flex items-center">
+                          <span className="text-xs text-gray-700 font-medium">{product.inStock}</span>
+                        </div>
+
+                        {/* Quantity */}
+                        <div className="flex items-center">
+                          <Input
+                            type="number"
+                            value={product.qty}
+                            onChange={(e) => handleQuantityChange(index, parseInt(e.target.value) || 0)}
+                            className="w-full text-xs py-0.5 px-2 h-7"
+                          />
+                        </div>
+
+                        {/* Batch No */}
+                        <div className="flex items-center">
+                          <Input
+                            value={product.batchNo}
+                            onChange={(e) => {
+                              const updatedProducts = [...form.products]
+                              updatedProducts[index].batchNo = e.target.value
+                              setForm({ ...form, products: updatedProducts })
+                            }}
+                            className="w-full text-xs py-0.5 px-2 h-7"
+                          />
+                        </div>
+
+                        {/* Manufacturing Date */}
+                        <div className="flex items-center">
+                          <Input
+                            type="date"
+                            value={product.mfDate || ''}
+                            onChange={(e) => {
+                              const updatedProducts = [...form.products]
+                              updatedProducts[index].mfDate = e.target.value
+                              setForm({ ...form, products: updatedProducts })
+                            }}
+                            className="w-full text-xs py-0.5 px-2 h-7"
+                          />
+                        </div>
+
+                        {/* Expiry Date */}
+                        <div className="flex items-center">
+                          <Input
+                            type="date"
+                            value={product.expDate || ''}
+                            onChange={(e) => {
+                              const updatedProducts = [...form.products]
+                              updatedProducts[index].expDate = e.target.value
+                              setForm({ ...form, products: updatedProducts })
+                            }}
+                            className="w-full text-xs py-0.5 px-2 h-7"
+                          />
+                        </div>
+
+                        {/* Actions - Copy/Edit buttons */}
+                        <div className="flex items-center space-x-0.5">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-xs px-1.5 py-0.5 h-6"
+                            title="Copy row"
+                            onClick={() => {
+                              const newProduct: StockInProduct = {
+                                ...product,
+                                slNo: form.products.length + 1,
+                                productId: '',
+                                productName: '',
+                                inStock: 0,
+                                qty: 0,
+                                batchNo: '',
+                                mfDate: '',
+                                expDate: '',
+                                unitPrice: 0,
+                                totalPrice: 0
+                              }
+                              setForm({ ...form, products: [...form.products, newProduct] })
+                            }}
+                          >
+                            📋
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-xs px-1.5 py-0.5 h-6"
+                            title="Clear row"
+                            onClick={() => {
+                              const updatedProducts = [...form.products]
+                              updatedProducts[index] = {
+                                ...updatedProducts[index],
+                                productId: '',
+                                productName: '',
+                                inStock: 0,
+                                qty: 0,
+                                batchNo: '',
+                                mfDate: '',
+                                expDate: '',
+                                unitPrice: 0,
+                                totalPrice: 0
+                              }
+                              setForm({ ...form, products: updatedProducts })
+                            }}
+                          >
+                            🗑️
+                          </Button>
+                        </div>
+
+                        {/* Add/Remove buttons */}
+                        <div className="flex items-center space-x-0.5">
+                          <Button
+                            size="sm"
+                            onClick={addProductRow}
+                            className="bg-green-600 hover:bg-green-700 text-xs px-1.5 py-0.5 h-6"
+                            title="Add new row"
+                          >
+                            +
+                          </Button>
+                          {form.products.length > 1 && (
+                            <Button
+                              size="sm"
+                              onClick={() => removeProductRow(index)}
+                              className="bg-red-600 hover:bg-red-700 text-xs px-1.5 py-0.5 h-6"
+                              title="Remove this row"
+                            >
+                              -
+                            </Button>
+                          )}
+                        </div>
+
+                      </div>
+                    ))}
+                  </div>
+
                   <div className="flex justify-end">
                     <Button onClick={handleSubmit} className="bg-orange-600 hover:bg-orange-700">
                       Submit

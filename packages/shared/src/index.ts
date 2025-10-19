@@ -2,6 +2,7 @@
 export * from './types/auth';
 export * from './types/product';
 export * from './types/sales';
+export * from './types/challan';
 
 // Services
 export { default as apiService } from './services/api';
@@ -14,7 +15,7 @@ export { getAuthzForRole } from './services/roles';
 export { store } from './store';
 export type { RootState, AppDispatch } from './store';
 export { default as authReducer } from './store/authSlice';
-export { loginUser, logoutUser, fetchUserProfile, clearError, setUser, setTokens } from './store/authSlice';
+export { loginUser, logoutUser, fetchUserProfile, clearError, setUser, setTokens, updateAuthorizationWithPurchase } from './store/authSlice';
 export { default as productReducer } from './store/productSlice';
 export type { ProductState, Product, StockInRecord, StockInProduct, Vendor, Customer } from './store/productSlice';
 export {
@@ -31,7 +32,8 @@ export {
     deleteVendor,
     addCustomer,
     updateCustomer,
-    deleteCustomer
+    deleteCustomer,
+    processPurchaseBill
 } from './store/productSlice';
 export { default as salesReducer } from './store/salesSlice';
 export type { SalesState } from './store/salesSlice';
@@ -56,12 +58,34 @@ export {
     clearError as clearPurchaseError
 } from './store/purchaseSlice';
 
+export { default as challanReducer } from './store/challanSlice';
+export type { ChallanState } from './store/challanSlice';
+export {
+    setLoading as setChallanLoading,
+    setError as setChallanError,
+    setChallans,
+    setSelectedVendor as setChallanSelectedVendor,
+    selectChallan,
+    deselectChallan,
+    clearSelectedChallans,
+    createPurchaseBill,
+    updatePurchaseBillProduct,
+    updatePaymentEntry,
+    updateAdvanceAmount,
+    submitPurchaseBill,
+    clearCurrentPurchaseBill,
+    addPaymentHistory,
+    setPaymentHistory,
+    addChallanFromStockIn
+} from './store/challanSlice';
+
 // RBAC types
 export type { Authorization, AuthorizationTile, AuthorizationPage, AuthorizationActionMap, TileKey, PageKey } from './types/auth';
 
 // Sample Data
 export { sampleProducts, sampleCategories } from './data/sampleProducts';
 export { sampleCustomers } from './data/sampleCustomers';
+export { sampleChallans, samplePaymentHistory } from './data/sampleChallans';
 
 // Retail Data
 export { retailProducts, categories, brands } from './data/retailProducts';
